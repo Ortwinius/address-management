@@ -9,8 +9,6 @@ public class Address
     public string? Recipient { get; set; }
     public int LocationId { get; set; }
     public Location Location { get; set; } = null!;
-    // public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    // public DateTime ModifiedAt { get; set; } = DateTime.UtcNow;
 }
 
 public class Location

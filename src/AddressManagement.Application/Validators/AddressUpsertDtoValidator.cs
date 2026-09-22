@@ -4,9 +4,9 @@ using FluentValidation;
 
 namespace AddressManagement.Application.Validators;
 
-public class UpsertAddressValidator : AbstractValidator<AddressUpsertDto>
+public class AddressUpsertDtoValidator : AbstractValidator<AddressUpsertDto>
 {
-    public UpsertAddressValidator()
+    public AddressUpsertDtoValidator()
     {
         RuleFor(x => x.Street).NotEmpty().MaximumLength(200);
         RuleFor(x => x.ZipCode).NotEmpty().MaximumLength(10);

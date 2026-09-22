@@ -15,31 +15,16 @@ public class AddressController(
     ) : ControllerBase
 {
     [HttpGet(Name = "GetAll")]
-    public async Task<ActionResult<AddressListItemDto>> GetAll()
+    public async Task<ActionResult<IEnumerable<AddressListDto>>> GetAll(CancellationToken ct)
     {
-        logger.LogInformation("Fetching list of all addresses");
-        try
-        {
-            var addresses = await addressService.GetAll();
-            return Ok(addresses);
-        }
-        catch (Exception e)
-        {
-            return BadRequest();
-        }
+        var addresses = await addressService.GetAll(ct);
+        return Ok(addresses);
     }
     
-    // [HttpPost(Name = "Address")]
-    // public async Task<ActionResult<bool>> AddAddress([FromForm] AddressUpsertDto addressDto)
-    // {
-    //     try
-    //     {
-    //         var addresses = await addressService.GetAll();
-    //         return addresses;
-    //     }
-    //     catch (Exception e)
-    //     {
-    //         
-    //     }
-    // }
+    [HttpPost(Name = "Address")]
+    public async Task<ActionResult<bool>> AddAddress([FromForm] AddressUpsertDto addressDto)
+    {
+        var addresses = await addressService.Add();
+        return addresses;
+    }
 }

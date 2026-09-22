@@ -1,5 +1,8 @@
 using AddressManagement.Application.Dtos;
-using AddressManagement.Infrastructure.Repositories;
+using AddressManagement.Application.Mappers;
+using AddressManagement.Domain;
+
+using AutoMapper;
 
 using Microsoft.Extensions.Logging;
 
@@ -10,12 +13,21 @@ public class AddressService(
     IAddressRepository addressRepository
     ) : IAddressService
 {
-    public async Task<IEnumerable<AddressListItemDto>> GetAll()
+    public async Task<IEnumerable<AddressListDto>> GetAll(CancellationToken ct)
     {
-        throw new NotImplementedException();
-        var addresses = await addressRepository.GetAll();
-        // // using Mapper in Service instead of ProjectTo MetadataListDto in Repo to keep separation of concerns
-        // var allListMetadata = _mapper.Map<IEnumerable<DocumentListDto>>(allMetadata);
-        // return allListMetadata;
-    } 
+        var addresses = await addressRepository.GetAll(ct);
+        
+        logger.LogInformation($"Address List: {addresses.First().Id}");
+        return addresses;
+    }
+
+    public async Task<AddressDetailDto> Add(AddressUpsertDto addressDto, CancellationToken ct)
+    {
+        if (addressDto == null)
+        {
+            throw new InvalidDataException();
+        }
+
+        var savedAddressDto = addressRepository.Add(addressDto);
+    }
 }

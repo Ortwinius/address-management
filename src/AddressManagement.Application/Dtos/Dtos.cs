@@ -1,9 +1,14 @@
 namespace AddressManagement.Application.Dtos;
 
-public sealed record AddressListItemDto(int AddressId, string Street, string ZipCode);
+public sealed record AddressListDto(
+    int Id, 
+    string Street, 
+    string Location, 
+    // string ZipCode, 
+    string Country);
 
-public sealed record AddressDetailItemDto(
-    int AddressId, 
+public sealed record AddressDetailDto(
+    int Id, 
     string Street, 
     string ZipCode, 
     string Location, 

@@ -4,5 +4,7 @@ namespace AddressManagement.Application.Services;
 
 public interface IAddressService
 {
-    Task<IEnumerable<AddressListItemDto>> GetAll();
+    Task<IEnumerable<AddressListDto>> GetAll(CancellationToken ct);
+   
+    Task<AddressDetailDto> Add(AddressUpsertDto addressDto, CancellationToken ct);
 }

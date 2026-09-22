@@ -3,7 +3,7 @@ using AddressManagement.Domain;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace AddressManagement.Infrastructure.DbContext;
+namespace AddressManagement.Infrastructure.Persistence;
 
 public class AddressDbContext(DbContextOptions<AddressDbContext> options) : Microsoft.EntityFrameworkCore.DbContext(options)
 {
