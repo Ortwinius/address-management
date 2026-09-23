@@ -4,7 +4,6 @@ public sealed record AddressListDto(
     int Id, 
     string Street, 
     string Location, 
-    // string ZipCode, 
     string Country);
 
 public sealed record AddressDetailDto(
@@ -13,15 +12,17 @@ public sealed record AddressDetailDto(
     string ZipCode, 
     string Location, 
     string Country,
-    string? Recipient
+    string? Recipient,
+    string? AddressAffix
     );
 
-public sealed record AddressUpsertDto(
+public sealed record AddressCreateDto(
     string Street, 
     string ZipCode, 
     string Location, 
     string Country, 
-    string? Recipient
+    string? Recipient,
+    string? AddressAffix
     );
 
 public sealed record AddressSearchItemDto(int Id);

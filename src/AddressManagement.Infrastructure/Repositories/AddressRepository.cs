@@ -5,54 +5,34 @@ using AddressManagement.Domain;
 using AddressManagement.Infrastructure.Persistence;
 
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 
 namespace AddressManagement.Infrastructure.Repositories;
 
-public class AddressRepository(AddressDbContext dbContext, ILogger<AddressRepository> logger)
-    : IAddressRepository
+public class AddressRepository(AddressDbContext dbContext) : IAddressRepository
 {
-    public async Task<IEnumerable<AddressListDto>> GetAll(CancellationToken ct)
-    {
-        try
-        {
-            var addresses = await dbContext.Addresses
-                .Select(a => new AddressListDto(
-                    a.Id,
-                    a.Street,
-                    a.Location.Name,
-                    a.Location.ZipCode,
-                    a.Location.Country.Name
-                ))
-                .ToListAsync(ct);
-            
-            return addresses;
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error retrieving all metadata");
-            throw new Exception("Failed to retrieve address list", ex);
-        }
-    }
+    public Task<List<AddressListDto>> GetAll(CancellationToken ct) =>
+        dbContext.Addresses
+            .AsNoTracking()
+            .Select(AddressMapper.ToListItem)
+            .ToListAsync(ct);
 
-    public async void Add(AddressUpsertDto address, CancellationToken ct)
-    {
-                
-    }
-    // var addresses = new List<Address>
-    // {
-    //     new Address
-    //     {
-    //         Id = 1,
-    //         Street = "Göpfritzgasse 6",
-    //         Location = new Location
-    //         {
-    //             Id = 12,
-    //             Name = "Wien",
-    //             ZipCode = "1210",
-    //             Country = new Country { Id = 123, Name = "Austria" }
-    //         }
-    //     }
-    // };
 
+    Task<List<AddressDetailDto>> GetById(int id, CancellationToken ct) => 
+        // dbcontext.addresses
+        //     .asnotracking()
+        //     .firstordefaultasync(a => a.id == id, ct)
+        //     .select(addressmapper.todetail);
+    
+    public Task<Country?> FindCountry(string name, CancellationToken ct) =>
+        dbContext.Countries.FirstOrDefaultAsync(c => c.Name == name, ct);
+
+    public Task<Location?> FindLocation(int countryId, string zipCode, string name, CancellationToken ct) =>
+        dbContext.Locations.FirstOrDefaultAsync(
+            l => l.CountryId == countryId && l.ZipCode == zipCode && l.Name == name, ct);
+
+    public async Task Add(Address address, CancellationToken ct)
+    {
+        dbContext.Addresses.Add(address);
+        await dbContext.SaveChangesAsync(ct);
+    }
 }

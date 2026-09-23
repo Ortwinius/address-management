@@ -1,9 +1,11 @@
+using System.Globalization;
+
 using AddressManagement.Application;
-using AddressManagement.Application.Mappers;
 using AddressManagement.Application.Services;
-using AddressManagement.Domain;
+using AddressManagement.Application.Validators;
 using AddressManagement.Infrastructure.Persistence;
 using AddressManagement.Infrastructure.Repositories;
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 
@@ -19,6 +21,8 @@ builder.Services.AddDbContext<AddressDbContext>(options =>
 builder.Services.AddScoped<IAddressRepository, AddressRepository>();
 
 builder.Services.AddScoped<IAddressService, AddressService>();
+builder.Services.AddValidatorsFromAssemblyContaining<AddressCreateDtoValidator>();
+ValidatorOptions.Global.LanguageManager.Culture = new CultureInfo("de");
 
 builder.Services.AddProblemDetails();
 

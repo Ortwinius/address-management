@@ -3,9 +3,12 @@ using AddressManagement.Domain;
 
 namespace AddressManagement.Application;
 
+// Writes work with entities, reads project directly to DTOs (no over-fetching).
 public interface IAddressRepository
 {
-    Task<IEnumerable<AddressListDto>> GetAll(CancellationToken ct);
-    Task<AddressDetailDto> Add(AddressUpsertDto address, CancellationToken ct);
-    Task<AddressDetailDto> GetById(string Id, CancellationToken ct);
+    Task<List<AddressListDto>> GetAll(CancellationToken ct);
+    Task<List<AddressDetailDto>> GetById(int id, CancellationToken ct);
+    Task<Country?> FindCountry(string name, CancellationToken ct);
+    Task<Location?> FindLocation(int countryId, string zipCode, string name, CancellationToken ct);
+    Task Add(Address address, CancellationToken ct);
 }

@@ -2,8 +2,6 @@ using AddressManagement.Application.Dtos;
 using AddressManagement.Application.Mappers;
 using AddressManagement.Domain;
 
-using AutoMapper;
-
 using Microsoft.Extensions.Logging;
 
 namespace AddressManagement.Application.Services;
@@ -16,18 +14,37 @@ public class AddressService(
     public async Task<IEnumerable<AddressListDto>> GetAll(CancellationToken ct)
     {
         var addresses = await addressRepository.GetAll(ct);
-        
-        logger.LogInformation($"Address List: {addresses.First().Id}");
+
+        logger.LogInformation("Loaded {Count} addresses", addresses.Count);
         return addresses;
     }
 
-    public async Task<AddressDetailDto> Add(AddressUpsertDto addressDto, CancellationToken ct)
-    {
-        if (addressDto == null)
-        {
-            throw new InvalidDataException();
-        }
 
-        var savedAddressDto = addressRepository.Add(addressDto);
+    Task<IEnumerable<AddressDetailDto>> GetById(int id, CancellationToken ct)
+    {
+        
+    }
+    public async Task<AddressDetailDto> Add(AddressCreateDto dto, CancellationToken ct)
+    {
+        // Find-or-create keeps Country/Location normalized (shared by many addresses).
+        var country = await addressRepository.FindCountry(dto.Country, ct)
+                      ?? new Country { Name = dto.Country };
+
+        var location = (country.Id != 0
+                           ? await addressRepository.FindLocation(country.Id, dto.ZipCode, dto.Location, ct)
+                           : null)
+                       ?? new Location { Name = dto.Location, ZipCode = dto.ZipCode, Country = country };
+
+        var address = new Address
+        {
+            Street = dto.Street,
+            Recipient = dto.Recipient,
+            Location = location
+        };
+
+        await addressRepository.Add(address, ct);
+
+        logger.LogInformation("Created address {AddressId}", address.Id);
+        return AddressMapper.ToDetail(address);
     }
 }

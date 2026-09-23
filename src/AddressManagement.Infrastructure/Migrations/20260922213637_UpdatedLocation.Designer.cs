@@ -2,6 +2,7 @@
 using AddressManagement.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -10,9 +11,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AddressManagement.Infrastructure.Migrations
 {
     [DbContext(typeof(AddressDbContext))]
-    partial class AddressDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260922213637_UpdatedLocation")]
+    partial class UpdatedLocation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -30,9 +33,6 @@ namespace AddressManagement.Infrastructure.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("AddressAffix")
-                        .HasColumnType("text");
 
                     b.Property<int>("LocationId")
                         .HasColumnType("integer");
