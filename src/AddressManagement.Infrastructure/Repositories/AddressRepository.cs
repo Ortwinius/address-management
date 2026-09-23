@@ -17,7 +17,7 @@ public class AddressRepository(AddressDbContext dbContext) : IAddressRepository
             .ToListAsync(ct);
 
 
-    Task<List<AddressDetailDto>> GetById(int id, CancellationToken ct) => 
+    public Task<List<AddressDetailDto>> GetById(int id, CancellationToken ct) { throw new NotImplementedException();}
         // dbcontext.addresses
         //     .asnotracking()
         //     .firstordefaultasync(a => a.id == id, ct)

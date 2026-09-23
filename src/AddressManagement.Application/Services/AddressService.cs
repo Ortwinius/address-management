@@ -20,9 +20,15 @@ public class AddressService(
     }
 
 
-    Task<IEnumerable<AddressDetailDto>> GetById(int id, CancellationToken ct)
+    public Task<IEnumerable<AddressDetailDto>> GetById(int id, CancellationToken ct)
     {
-        
+        var address = await addressRepository.GetById(id);
+        if (address == null)
+        {
+            // exception? wenn ja was für eine ?
+        }
+
+        return address;
     }
     public async Task<AddressDetailDto> Add(AddressCreateDto dto, CancellationToken ct)
     {
