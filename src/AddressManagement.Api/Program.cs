@@ -39,8 +39,8 @@ if (app.Environment.IsDevelopment())
     await scope.ServiceProvider.GetRequiredService<AddressDbContext>().Database.MigrateAsync();
 }
 
-app.UseAuthorization();
 app.UseExceptionHandler();
+app.UseAuthorization();
 app.MapControllers();
 
 app.Run();

@@ -1,4 +1,4 @@
-import {Component, effect, inject, input, output, signal} from '@angular/core';
+import {Component, effect, inject, model, output, signal} from '@angular/core';
 import {HttpClient, httpResource} from '@angular/common/http';
 import {AddressCreate, AddressDetail} from "../addresses.models";
 import { form, FormField, required, maxLength } from '@angular/forms/signals';
@@ -25,7 +25,7 @@ const EmptyAddress: AddressCreate = {
 export class AddressesForm {
   private readonly http = inject(HttpClient)
 
-  readonly selectedId = input<number | null>(null)
+  readonly selectedId = model<number | null>(null)
   readonly saved = output<void>()
 
   protected readonly model = signal<AddressCreate>(EmptyAddress)
@@ -42,12 +42,24 @@ export class AddressesForm {
   })
 
   constructor(){
-    // effect(() => {
-    //
-    // })
+    effect(() => {
+      if (this.selectedId() === null) {
+        this.model.set(EmptyAddress)
+        return
+      }
+      const detail = this.detail.value()
+      if (detail) {
+        const { id, ...address } = detail
+        this.model.set(address)
+      }
+    })
   }
   protected save(){
-
+    const id = this.selectedId()
+    const request = id
+      ? this.http.put(`/api/addresses/${id}`, this.model())
+      : this.http.post('/api/addresses', this.model())
+    request.subscribe(() => this.saved.emit())
   }
-  protected reset(){this.model.set(EmptyAddress)}
+  protected reset(){this.selectedId.set(null)}
 }

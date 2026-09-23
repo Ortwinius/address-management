@@ -1,4 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { AddressesList } from './addresses-list';
 
 describe('AddressesList', () => {
@@ -7,12 +9,13 @@ describe('AddressesList', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()],
       imports: [AddressesList],
     }).compileComponents();
 
     fixture = TestBed.createComponent(AddressesList);
     component = fixture.componentInstance;
-    await fixture.whenStable();
+    fixture.detectChanges();
   });
 
   it('should create', () => {

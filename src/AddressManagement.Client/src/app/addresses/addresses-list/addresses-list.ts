@@ -47,7 +47,7 @@ export class AddressesList {
   // TODO: Add <Pagedresult> as wrapper
   protected readonly addresses = httpResource<PagedResult<AddressListItem>>(() => ({
     url: '/api/addresses',
-    // params: this.toParams(this.query())
+    params: { page: this.query().page, pageSize: this.query().pageSize },
   }))
 
   reload() {this.addresses.reload()}
@@ -58,7 +58,7 @@ export class AddressesList {
 
   }
   onPage(e: PageEvent){
-
+    this.query.update(q => ({ ...q, page: e.pageIndex + 1, pageSize: e.pageSize }))
   }
 
 }

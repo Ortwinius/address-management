@@ -11,46 +11,69 @@ public class AddressService(
     IAddressRepository addressRepository
     ) : IAddressService
 {
-    public async Task<IEnumerable<AddressListDto>> GetAll(CancellationToken ct)
+    public async Task<PagedResult<AddressListDto>> GetAll(int page, int pageSize, CancellationToken ct)
     {
-        var addresses = await addressRepository.GetAll(ct);
+        var result = await addressRepository.GetAll(page, pageSize, ct);
 
-        logger.LogInformation("Loaded {Count} addresses", addresses.Count);
-        return addresses;
+        logger.LogInformation("Loaded {Count} of {Total} addresses", result.Items.Count, result.Total);
+        return result;
     }
 
-
-    public Task<IEnumerable<AddressDetailDto>> GetById(int id, CancellationToken ct)
+    public async Task<AddressDetailDto?> GetById(int id, CancellationToken ct)
     {
-        var address = await addressRepository.GetById(id);
-        if (address == null)
-        {
-            // exception? wenn ja was für eine ?
-        }
-
-        return address;
+        var address = await addressRepository.GetById(id, ct);
+        return address is null ? null : AddressMapper.ToDetail(address);
     }
+
     public async Task<AddressDetailDto> Add(AddressCreateDto dto, CancellationToken ct)
     {
-        // Find-or-create keeps Country/Location normalized (shared by many addresses).
-        var country = await addressRepository.FindCountry(dto.Country, ct)
-                      ?? new Country { Name = dto.Country };
-
-        var location = (country.Id != 0
-                           ? await addressRepository.FindLocation(country.Id, dto.ZipCode, dto.Location, ct)
-                           : null)
-                       ?? new Location { Name = dto.Location, ZipCode = dto.ZipCode, Country = country };
-
         var address = new Address
         {
             Street = dto.Street,
             Recipient = dto.Recipient,
-            Location = location
+            AddressAffix = dto.AddressAffix,
+            Location = await ResolveLocation(dto, ct)
         };
 
         await addressRepository.Add(address, ct);
 
         logger.LogInformation("Created address {AddressId}", address.Id);
         return AddressMapper.ToDetail(address);
+    }
+
+    public async Task<AddressDetailDto?> Update(int id, AddressCreateDto dto, CancellationToken ct)
+    {
+        var address = await addressRepository.GetById(id, ct);
+        if (address is null)
+        {
+            return null;
+        }
+
+        address.Street = dto.Street;
+        address.Recipient = dto.Recipient;
+        address.AddressAffix = dto.AddressAffix;
+        // Re-point to a (possibly new) Location instead of editing the shared one.
+        address.Location = await ResolveLocation(dto, ct);
+
+        await addressRepository.Update(address, ct);
+
+        logger.LogInformation("Updated address {AddressId}", address.Id);
+        return AddressMapper.ToDetail(address);
+    }
+
+    public async Task Delete(int id, CancellationToken ct)
+    {
+        await addressRepository.Delete(id, ct);
+    }
+    // Find-or-create keeps Country/Location normalized (shared by many addresses).
+    private async Task<Location> ResolveLocation(AddressCreateDto dto, CancellationToken ct)
+    {
+        var country = await addressRepository.FindCountry(dto.Country, ct)
+                      ?? new Country { Name = dto.Country };
+
+        return (country.Id != 0
+                   ? await addressRepository.FindLocation(country.Id, dto.ZipCode, dto.Location, ct)
+                   : null)
+               ?? new Location { Name = dto.Location, ZipCode = dto.ZipCode, Country = country };
     }
 }

@@ -27,3 +27,5 @@ public sealed record AddressCreateDto(
 
 public sealed record AddressSearchItemDto(int Id);
 
+public sealed record PagedResult<T>(List<T> Items, int Total, int Page, int PageSize);
+

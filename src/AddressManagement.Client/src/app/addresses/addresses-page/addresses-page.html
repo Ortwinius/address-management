@@ -1,5 +1,5 @@
 <!--<p>addresses-page works!</p>-->
 <div class="layout">
-  <app-addresses-list/>
-  <app-addresses-form/>
+  <app-addresses-list (selected)="selectedId.set($event)"/>
+  <app-addresses-form [(selectedId)]="selectedId" (saved)="onSaved()"/>
 </div>
