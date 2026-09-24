@@ -1,3 +1,5 @@
+using System.Linq.Expressions;
+
 using AddressManagement.Application;
 using AddressManagement.Application.Dtos;
 using AddressManagement.Application.Mappers;
@@ -29,9 +31,17 @@ public class AddressRepository(AddressDbContext dbContext) : IAddressRepository
             addresses = addresses.Where(a => queryDto.Countries.Contains(a.Location.Country.Name));
         }
 
+        Expression<Func<Address, string>> key = queryDto.SortCol switch
+        {
+            "zipCode" => a => a.Location.ZipCode,
+            "street" => a => a.Street,
+            "country" => a => a.Location.Country.Name,
+            _ => a => a.Street
+        };
+        
         var total = await addresses.CountAsync(ct);
-        var items = await addresses
-            .OrderBy(a => a.Id) // stable order is required for Skip/Take
+        var orderedByCol = (queryDto.Desc ? addresses.OrderByDescending(key) : addresses.OrderBy(key)).ThenBy(a => a.Id);
+        var items = await orderedByCol
             .Skip((queryDto.Page - 1) * queryDto.PageSize)
             .Take(queryDto.PageSize)
             .Select(AddressMapper.ToListItem)

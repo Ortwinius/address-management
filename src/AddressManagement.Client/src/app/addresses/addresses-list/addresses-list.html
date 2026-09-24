@@ -26,7 +26,7 @@
 </div>
 
 <table mat-table [dataSource]="items()"
-       matSort matSortDisableClear
+       matSort matSortDisableClear="false"
        [matSortActive]="sort().active" [matSortDirection]="sort().direction"
        (matSortChange)="sort.set($event)">
   @for (col of columnDefs; track col.id) {

@@ -104,5 +104,6 @@ export class AddressesList {
 // Drops unset filters so the URL only carries what is actually filtered.
 function withoutEmpty(params: Record<string, string | number | boolean | string[]>) {
   return Object.fromEntries(
-    Object.entries(params).filter(([, v]) => v !== '' && !(Array.isArray(v) && v.length === 0)))
+    Object.entries(params).filter(([_, v]) => v !== '' && !(Array.isArray(v) && v.length === 0)))
 }
+
