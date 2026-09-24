@@ -25,6 +25,8 @@ public sealed record AddressCreateDto(
     string? AddressAffix
     );
 
+public sealed record CountryDto(string Name);
+
 public sealed record AddressQueryDto(
     string? Street,
     string? Location,

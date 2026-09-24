@@ -10,7 +10,7 @@ namespace AddressManagement.Infrastructure.Repositories;
 
 public class AddressRepository(AddressDbContext dbContext) : IAddressRepository
 {
-    public async Task<PagedResult<AddressListDto>> GetAddresses(AddressQueryDto queryDto, CancellationToken ct)
+    public async Task<PagedResult<AddressListDto>> GetAll(AddressQueryDto queryDto, CancellationToken ct)
     {
         var addresses = dbContext.Addresses.AsNoTracking();
 
@@ -69,11 +69,12 @@ public class AddressRepository(AddressDbContext dbContext) : IAddressRepository
         return deletedCount > 0;
     }
 
-    public async Task<IEnumerable<Country>> GetCountries(CancellationToken ct)
+    public async Task<IEnumerable<CountryDto>> GetCountries(CancellationToken ct)
     {
         var countries = await dbContext.Countries
             .AsNoTracking()
             .OrderBy(c => c.Name)
+            .Select(CountryMapper.ToDto)
             .ToListAsync(ct);
         return countries;
     }

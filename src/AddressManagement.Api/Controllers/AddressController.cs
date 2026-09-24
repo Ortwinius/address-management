@@ -1,5 +1,7 @@
 using AddressManagement.Application.Dtos;
 using AddressManagement.Application.Services;
+using AddressManagement.Domain;
+
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 
@@ -59,5 +61,11 @@ public class AddressController(
     {
         var deleted = await addressService.Delete(id, ct);
         return deleted ? Ok() : NotFound();
+    }
+    
+    [HttpGet("countries")]
+    public async Task<IEnumerable<CountryDto>> GetCountries(CancellationToken ct)
+    {
+        return await addressService.GetCountries(ct);
     }
 }

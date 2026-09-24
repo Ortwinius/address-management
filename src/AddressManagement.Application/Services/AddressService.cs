@@ -13,7 +13,7 @@ public class AddressService(
 {
     public async Task<PagedResult<AddressListDto>> GetAll(AddressQueryDto queryDto, CancellationToken ct)
     {
-        var result = await addressRepository.GetAddresses(queryDto, ct);
+        var result = await addressRepository.GetAll(queryDto, ct);
 
         logger.LogInformation("Loaded {Count} of {Total} addresses", result.Items.Count, result.Total);
         return result;
@@ -75,5 +75,11 @@ public class AddressService(
                    ? await addressRepository.FindLocation(country.Id, dto.ZipCode, dto.Location, ct)
                    : null)
                ?? new Location { Name = dto.Location, ZipCode = dto.ZipCode, Country = country };
+    }
+
+    public async Task<IEnumerable<CountryDto>> GetCountries(CancellationToken ct)
+    {
+        var countries = await addressRepository.GetCountries(ct);
+        return countries;
     }
 }
