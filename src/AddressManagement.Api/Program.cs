@@ -36,7 +36,15 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
     app.MapScalarApiReference();
     using var scope = app.Services.CreateScope();
-    await scope.ServiceProvider.GetRequiredService<AddressDbContext>().Database.MigrateAsync();
+    var db = scope.ServiceProvider.GetRequiredService<AddressDbContext>();
+    await db.Database.MigrateAsync();
+
+    // Opt-in: dotnet run -- SeedAddresses=100000
+    var seedCount = app.Configuration.GetValue<int?>("SeedAddresses");
+    if (seedCount is > 0)
+    {
+        await DevDataSeeder.Seed(db, seedCount.Value);
+    }
 }
 
 app.UseExceptionHandler();
