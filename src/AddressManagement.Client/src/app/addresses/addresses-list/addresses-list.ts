@@ -1,30 +1,46 @@
-import {Component, output, signal} from '@angular/core';
-import {AddressListItem, AddressQuery, PagedResult} from '../addresses.models';
-import { httpResource } from '@angular/common/http';
-import {MatPaginator, PageEvent} from '@angular/material/paginator';
+import {Component, computed, linkedSignal, output, signal} from '@angular/core';
+import {toObservable, toSignal} from '@angular/core/rxjs-interop';
+import {httpResource} from '@angular/common/http';
+import {debounceTime} from 'rxjs';
+import {AddressListItem, Country, PagedResult} from '../addresses.models';
+import {MatPaginator} from '@angular/material/paginator';
 import {MatFormField, MatInput, MatLabel} from '@angular/material/input';
+import {MatOption, MatSelect} from '@angular/material/select';
+import {MatSort, MatSortHeader, Sort} from '@angular/material/sort';
+import {MatProgressBar} from '@angular/material/progress-bar';
 import {
   MatCell, MatCellDef,
   MatColumnDef,
   MatHeaderCell, MatHeaderCellDef,
   MatHeaderRow,
   MatHeaderRowDef,
+  MatNoDataRow,
   MatRow, MatRowDef,
   MatTable
 } from '@angular/material/table';
-import {MatButton} from '@angular/material/button';
+
+type TextFilter = { street: string; location: string }
+type Filter = TextFilter & { countries: string[]; sort: Sort }
+type Page = { index: number; size: number }
+
+const DebounceTimeInMs = 300;
 @Component({
   imports: [
     MatFormField,
     MatLabel,
+    MatInput,
+    MatSelect,
+    MatOption,
+    MatSort,
+    MatSortHeader,
+    MatProgressBar,
     MatTable,
     MatColumnDef,
-    MatInput,
-    MatButton,
     MatHeaderRow,
     MatRow,
     MatCell,
     MatHeaderCell,
+    MatNoDataRow,
     MatPaginator,
     MatHeaderRowDef,
     MatHeaderCellDef,
@@ -32,33 +48,61 @@ import {MatButton} from '@angular/material/button';
     MatRowDef
   ],
   selector: 'app-addresses-list',
-  styleUrl: './addresses-list.css',
   templateUrl: './addresses-list.html',
 })
 export class AddressesList {
   readonly selected = output<number>();
-  protected readonly columns = ['street']
+
+  protected readonly columnDefs = [
+    { id: 'street', label: 'Straße' },
+    { id: 'zipCode', label: 'PLZ' },
+    { id: 'location', label: 'Ort' },
+    { id: 'country', label: 'Land' },
+  ] as const
+  protected readonly columns = this.columnDefs.map(c => c.id)
 
   protected readonly streetInput = signal('')
+  protected readonly locationInput = signal('')
+  protected readonly countriesInput = signal<string[]>([])
+  protected readonly sort = signal<Sort>({ active: 'street', direction: 'asc' })
 
-  protected readonly query = signal<AddressQuery>(
-    {street: '' , page: 1, pageSize: 10, sort: 'street' })
+  // Only free text is debounced, so typing does not fire a request per key.
+  private readonly text = toSignal(
+    toObservable(computed<TextFilter>(() => ({ street: this.streetInput(), location: this.locationInput() })))
+      .pipe(debounceTime(DebounceTimeInMs)),
+    { initialValue: { street: '', location: '' }, equal: (a, b) => a.street === b.street && a.location === b.location })
 
-  // TODO: Add <Pagedresult> as wrapper
-  protected readonly addresses = httpResource<PagedResult<AddressListItem>>(() => ({
-    url: '/api/addresses',
-    params: { page: this.query().page, pageSize: this.query().pageSize },
-  }))
+  private readonly filter = computed<Filter>(() => ({ ...this.text(), countries: this.countriesInput(), sort: this.sort()}))
 
-  reload() {this.addresses.reload()}
-  toParams(q: AddressQuery) {
-    // TODO: filter duplicates
-  }
-  protected search(){
+  // Any filter or sort change jumps back to the first page, the page size is kept.
+  protected readonly page = linkedSignal<Filter, Page>({
+    source: this.filter,
+    computation: (_, previous) => ({ index: 0, size: previous?.value.size ?? 10 }),
+  })
 
-  }
-  onPage(e: PageEvent){
-    this.query.update(q => ({ ...q, page: e.pageIndex + 1, pageSize: e.pageSize }))
-  }
+  protected readonly addresses = httpResource<PagedResult<AddressListItem>>(() => {
+    const { street, location, countries, sort } = this.filter()
+    const { index, size } = this.page()
+    return {
+      url: '/api/addresses',
+      params: withoutEmpty({
+        street, location, countries,
+        sortCol: sort.active, desc: sort.direction === 'desc',
+        page: index + 1, pageSize: size,
+      }),
+    }
+  })
+  protected readonly items = computed(() => this.addresses.hasValue() ? this.addresses.value().items : [])
+  protected readonly total = computed(() => this.addresses.hasValue() ? this.addresses.value().total : 0)
 
+  private readonly countries = httpResource<Country[]>(() => '/api/addresses/countries')
+  protected readonly uniqueCountryOptions = computed(() => this.countries.hasValue() ? this.countries.value() : [])
+
+  reload() { this.addresses.reload() }
+}
+
+// Drops unset filters so the URL only carries what is actually filtered.
+function withoutEmpty(params: Record<string, string | number | boolean | string[]>) {
+  return Object.fromEntries(
+    Object.entries(params).filter(([, v]) => v !== '' && !(Array.isArray(v) && v.length === 0)))
 }

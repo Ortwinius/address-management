@@ -1,6 +1,7 @@
 export type AddressListItem = {
   id: number;
   street: string;
+  zipCode: string;
   location: string;
   country: string;
 }
@@ -18,16 +19,13 @@ export type AddressDetail = {
   id: number;
 } & AddressCreate
 
+export type Country = {
+  name: string;
+}
+
 export type PagedResult<T> = {
   items: T[];
   total: number;
   pageSize: number;
   page: number;
-}
-
-export type AddressQuery = {
-  street: string;
-  page: number;
-  pageSize: number;
-  sort: string;
 }

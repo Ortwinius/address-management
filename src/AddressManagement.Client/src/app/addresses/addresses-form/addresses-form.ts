@@ -4,6 +4,8 @@ import {AddressCreate, AddressDetail} from "../addresses.models";
 import { form, FormField, required, maxLength } from '@angular/forms/signals';
 import {MatError, MatFormField, MatInput, MatLabel} from '@angular/material/input';
 import {MatButton} from '@angular/material/button';
+import {MatProgressSpinner} from '@angular/material/progress-spinner';
+import {finalize} from 'rxjs';
 
 const EmptyAddress: AddressCreate = {
   street: '', zipCode: '', location: '', country: '', recipient: null, addressAffix: null
@@ -16,7 +18,8 @@ const EmptyAddress: AddressCreate = {
     MatInput,
     FormField,
     MatError,
-    MatButton
+    MatButton,
+    MatProgressSpinner
   ],
   selector: 'app-addresses-form',
   styleUrl: './addresses-form.css',
@@ -28,6 +31,7 @@ export class AddressesForm {
   readonly selectedId = model<number | null>(null)
   readonly saved = output<void>()
 
+  protected readonly saving = signal<boolean>(false)
   protected readonly model = signal<AddressCreate>(EmptyAddress)
   protected readonly form = form(this.model, p => {
     required(p.street);
@@ -42,6 +46,7 @@ export class AddressesForm {
   })
 
   constructor(){
+    /* When id is null reset the form, else fill it with the detail data */
     effect(() => {
       if (this.selectedId() === null) {
         this.model.set(EmptyAddress)
@@ -54,12 +59,19 @@ export class AddressesForm {
       }
     })
   }
+
+  /* Update saving state,
+  if the current form page has an id
+  it means its an existing address
+  -> update, else create a new one
+  -> signal parent with emit and set saving-state finally to false */
   protected save(){
+    this.saving.set(true)
     const id = this.selectedId()
     const request = id
       ? this.http.put(`/api/addresses/${id}`, this.model())
       : this.http.post('/api/addresses', this.model())
-    request.subscribe(() => this.saved.emit())
+    request.pipe(finalize(() => this.saving.set(false))).subscribe(() => this.saved.emit())
   }
   protected reset(){this.selectedId.set(null)}
 }

@@ -3,6 +3,7 @@ namespace AddressManagement.Application.Dtos;
 public sealed record AddressListDto(
     int Id, 
     string Street, 
+    string ZipCode, 
     string Location, 
     string Country);
 

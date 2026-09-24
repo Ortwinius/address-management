@@ -1,4 +1,4 @@
-<h2>{{selectedId() ? 'Adresse bearbeiten' : 'Addresse erstellen'}}</h2>
+<h2>{{selectedId() ? 'Adresse bearbeiten' : 'Adresse erstellen'}}</h2>
 
 <div class="flex flex-col justify-center items-start">
   <mat-form-field>
@@ -26,5 +26,7 @@
   </mat-form-field>
 </div>
 
-<button mat-flat-button [disabled]="form().invalid()" (click)="save()">{{}}</button>
+<button mat-flat-button [disabled]="form().invalid() || saving()" (click)="save()">
+  @if (saving()) { <mat-spinner diameter="18"/> } @else { Speichern }
+</button>
 <button mat-flat-button (click)="reset()">Neu</button>

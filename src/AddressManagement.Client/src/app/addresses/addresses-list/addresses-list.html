@@ -1,27 +1,62 @@
-<div class="address-list">
+<div class="flex flex-wrap gap-2 p-2">
   <mat-form-field>
     <mat-label>Straße</mat-label>
-    <input matInput
-           [value]="streetInput()"
-           (input)="streetInput.set($any($event.target).value)"
-           (keyup.enter)="search()"/>
+    <input matInput [value]="streetInput()" (input)="streetInput.set($any($event.target).value)"/>
   </mat-form-field>
 
-  <button mat-flat-button (click)="search()">Suchen</button>
+  <mat-form-field>
+    <mat-label>Ort</mat-label>
+    <input matInput [value]="locationInput()" (input)="locationInput.set($any($event.target).value)"/>
+  </mat-form-field>
+
+  <mat-form-field>
+    <mat-label>Land</mat-label>
+    <mat-select multiple [value]="countriesInput()" (selectionChange)="countriesInput.set($event.value)">
+      @for (c of uniqueCountryOptions(); track c.name) {
+        <mat-option [value]="c.name">{{ c.name }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
 </div>
 
-<table mat-table [dataSource]="addresses.value()?.items ?? []">
-  <ng-container matColumnDef="street">
-    <th mat-header-cell *matHeaderCellDef>Straße</th>
-    <td mat-cell *matCellDef="let a ">{{a.street}}</td>
-  </ng-container>
+<div class="h-1">
+  @if (addresses.isLoading()) {
+    <mat-progress-bar mode="indeterminate"/>
+  }
+</div>
+
+<table mat-table [dataSource]="items()"
+       matSort matSortDisableClear
+       [matSortActive]="sort().active" [matSortDirection]="sort().direction"
+       (matSortChange)="sort.set($event)">
+  @for (col of columnDefs; track col.id) {
+    <ng-container [matColumnDef]="col.id">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ col.label }}</th>
+      <td mat-cell *matCellDef="let a">{{ a[col.id] }}</td>
+    </ng-container>
+  }
+
   <tr mat-header-row *matHeaderRowDef="columns"></tr>
-  <tr mat-row *matRowDef="let a; columns: columns" (click)="selected.emit(a.id)"></tr>
+  <tr mat-row *matRowDef="let a; columns: columns" class="cursor-pointer" (click)="selected.emit(a.id)"></tr>
+
+  <tr class="mat-mdc-row" *matNoDataRow>
+    <td class="mat-mdc-cell px-4" [attr.colspan]="columns.length">
+      @if (addresses.isLoading()) {
+        @for (i of [1, 2, 3, 4, 5]; track i) {
+          <div class="my-4 h-4 rounded bg-(--mat-sys-surface-container-high) animate-pulse"></div>
+        }
+      } @else if (addresses.error()) {
+        <p class="py-4">Adressen konnten nicht geladen werden.</p>
+      } @else {
+        <p class="py-4">Keine Adressen gefunden.</p>
+      }
+    </td>
+  </tr>
 </table>
 
 <mat-paginator
-  [length]="addresses.value()?.total ?? 0"
-  [pageSize]="query().pageSize"
-  [pageIndex]="query().page - 1"
-  [pageSizeOptions]="[10, 25, 50, 100]"
-  (page)="onPage($event)" />
+  [length]="total()"
+  [pageIndex]="page().index"
+  [pageSize]="page().size"
+  [pageSizeOptions]="[10, 25, 50]"
+  (page)="page.set({ index: $event.pageIndex, size: $event.pageSize })"/>
