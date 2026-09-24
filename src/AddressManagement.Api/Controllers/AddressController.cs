@@ -15,9 +15,9 @@ public class AddressController(
 {
     [HttpGet]
     public async Task<ActionResult<PagedResult<AddressListDto>>> GetAll(
-        [FromQuery] int page = 1, [FromQuery] int pageSize = 10, CancellationToken ct = default)
+        [FromQuery] AddressQueryDto queryDto, CancellationToken ct = default)
     {
-        var addresses = await addressService.GetAll(page, pageSize, ct);
+        var addresses = await addressService.GetAll(queryDto, ct);
         return Ok(addresses);
     }
 
@@ -29,35 +29,35 @@ public class AddressController(
     }
 
     [HttpPost]
-    public async Task<ActionResult<AddressDetailDto>> Add([FromBody] AddressCreateDto dto, CancellationToken ct = default)
+    public async Task<ActionResult<AddressDetailDto>> Add([FromBody] AddressCreateDto addressDto, CancellationToken ct = default)
     {
-        var validation = await validator.ValidateAsync(dto, ct);
+        var validation = await validator.ValidateAsync(addressDto, ct);
         if (!validation.IsValid)
         {
             return ValidationProblem(new ValidationProblemDetails(validation.ToDictionary()));
         }
 
-        var created = await addressService.Add(dto, ct);
+        var created = await addressService.Add(addressDto, ct);
         return StatusCode(StatusCodes.Status201Created, created);
     }
 
     [HttpPut("{id:int}")]
-    public async Task<ActionResult<AddressDetailDto>> Update(int id, [FromBody] AddressCreateDto dto, CancellationToken ct = default)
+    public async Task<ActionResult<AddressDetailDto>> Update(int id, [FromBody] AddressCreateDto addressDto, CancellationToken ct = default)
     {
-        var validation = await validator.ValidateAsync(dto, ct);
+        var validation = await validator.ValidateAsync(addressDto, ct);
         if (!validation.IsValid)
         {
             return ValidationProblem(new ValidationProblemDetails(validation.ToDictionary()));
         }
 
-        var updated = await addressService.Update(id, dto, ct);
+        var updated = await addressService.Update(id, addressDto, ct);
         return updated is null ? NotFound() : Ok(updated);
     }
 
     [HttpDelete("{id:int}")]
     public async Task<ActionResult> Delete(int id, CancellationToken ct = default)
     {
-        await addressService.Delete(id, ct);
-        return Ok();
+        var deleted = await addressService.Delete(id, ct);
+        return deleted ? Ok() : NotFound();
     }
 }

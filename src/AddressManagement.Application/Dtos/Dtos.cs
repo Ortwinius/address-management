@@ -25,7 +25,15 @@ public sealed record AddressCreateDto(
     string? AddressAffix
     );
 
-public sealed record AddressSearchItemDto(int Id);
+public sealed record AddressQueryDto(
+    string? Street,
+    string? Location,
+    string[]? Countries,
+    string SortCol = "Street",
+    bool Desc = false,
+    int Page = 1,
+    int PageSize = 10
+);
 
 public sealed record PagedResult<T>(List<T> Items, int Total, int Page, int PageSize);
 

@@ -10,21 +10,36 @@ namespace AddressManagement.Infrastructure.Repositories;
 
 public class AddressRepository(AddressDbContext dbContext) : IAddressRepository
 {
-    public async Task<PagedResult<AddressListDto>> GetAll(int page, int pageSize, CancellationToken ct)
+    public async Task<PagedResult<AddressListDto>> GetAddresses(AddressQueryDto queryDto, CancellationToken ct)
     {
-        var query = dbContext.Addresses.AsNoTracking();
-        var total = await query.CountAsync(ct);
-        var items = await query
+        var addresses = dbContext.Addresses.AsNoTracking();
+
+        if (!string.IsNullOrWhiteSpace(queryDto.Street))
+        {
+            addresses = addresses.Where(a => EF.Functions.ILike(a.Street, $"%{queryDto.Street}%"));
+        }
+
+        if (!string.IsNullOrWhiteSpace(queryDto.Location))
+        {
+            addresses = addresses.Where(a => EF.Functions.ILike(a.Location.Name, $"%{queryDto.Location}%"));
+        }
+
+        if (queryDto.Countries?.Length > 0)
+        {
+            addresses = addresses.Where(a => queryDto.Countries.Contains(a.Location.Country.Name));
+        }
+
+        var total = await addresses.CountAsync(ct);
+        var items = await addresses
             .OrderBy(a => a.Id) // stable order is required for Skip/Take
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
+            .Skip((queryDto.Page - 1) * queryDto.PageSize)
+            .Take(queryDto.PageSize)
             .Select(AddressMapper.ToListItem)
             .ToListAsync(ct);
 
-        return new PagedResult<AddressListDto>(items, total, page, pageSize);
+        return new PagedResult<AddressListDto>(items, total, queryDto.Page, queryDto.PageSize);
     }
 
-    // Tracked on purpose: Update modifies the returned entity.
     public Task<Address?> GetById(int id, CancellationToken ct) =>
         dbContext.Addresses
             .AsNoTracking()
@@ -45,23 +60,28 @@ public class AddressRepository(AddressDbContext dbContext) : IAddressRepository
         await dbContext.SaveChangesAsync(ct);
     }
     
-    public async Task Delete(int id, CancellationToken ct)
+    public async Task<bool> Delete(int id, CancellationToken ct)
     {
-        var address = await dbContext.Addresses.FirstOrDefaultAsync(a => a.Id == id, ct);
-        if (address == null)
-        {
-            return;
-        }
-        
-        dbContext.Addresses.Remove(address);
-        await dbContext.SaveChangesAsync(ct);
+        var deletedCount = await dbContext.Addresses
+            .Where(a => a.Id == id)
+            .ExecuteDeleteAsync<Address>(ct);
+
+        return deletedCount > 0;
     }
+
+    public async Task<IEnumerable<Country>> GetCountries(CancellationToken ct)
+    {
+        var countries = await dbContext.Countries
+            .AsNoTracking()
+            .OrderBy(c => c.Name)
+            .ToListAsync(ct);
+        return countries;
+    }
+    
     public Task<Country?> FindCountry(string name, CancellationToken ct) =>
         dbContext.Countries.FirstOrDefaultAsync(c => c.Name == name, ct);
 
     public Task<Location?> FindLocation(int countryId, string zipCode, string name, CancellationToken ct) =>
         dbContext.Locations.FirstOrDefaultAsync(
             l => l.CountryId == countryId && l.ZipCode == zipCode && l.Name == name, ct);
-
-    public Task SaveChanges(CancellationToken ct) => dbContext.SaveChangesAsync(ct);
 }

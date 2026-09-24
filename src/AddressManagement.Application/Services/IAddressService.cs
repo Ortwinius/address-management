@@ -4,7 +4,7 @@ namespace AddressManagement.Application.Services;
 
 public interface IAddressService
 {
-    Task<PagedResult<AddressListDto>> GetAll(int page, int pageSize, CancellationToken ct);
+    Task<PagedResult<AddressListDto>> GetAll(AddressQueryDto queryDto, CancellationToken ct);
 
     Task<AddressDetailDto?> GetById(int id, CancellationToken ct);
 
@@ -12,5 +12,5 @@ public interface IAddressService
 
     Task<AddressDetailDto?> Update(int id, AddressCreateDto addressDto, CancellationToken ct);
 
-    Task Delete(int id, CancellationToken ct);
+    Task<bool> Delete(int id, CancellationToken ct);
 }

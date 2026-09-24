@@ -27,8 +27,8 @@ public class AddressConfiguration : IEntityTypeConfiguration<Address>
         b.HasOne(a => a.Location).WithMany(l => l.Addresses)
             .HasForeignKey(a => a.LocationId)
             .OnDelete(DeleteBehavior.Restrict);
-        b.HasIndex(a => a.Street);
-        // .HasMethod("gin").HasOperators("gin_trgm_ops");
+        b.HasIndex(a => a.Street)
+            .HasMethod("gin").HasOperators("gin_trgm_ops"); /* for efficient string pattern matching */
     }
 }
 
@@ -40,7 +40,7 @@ public class LocationConfigration : IEntityTypeConfiguration<Location>
         b.Property(a => a.ZipCode).HasMaxLength(20);
         b.HasOne(a => a.Country).WithMany(l => l.Locations)
             .OnDelete(DeleteBehavior.Restrict);
-        b.HasIndex(a => new {a.CountryId, a.ZipCode, a.Name}).IsUnique();
+        b.HasIndex(a => new { a.CountryId, a.ZipCode, a.Name }).IsUnique();
         // .HasMethod("gin").HasOperators("gin_trgm_ops");
     }
 }

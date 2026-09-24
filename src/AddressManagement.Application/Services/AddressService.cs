@@ -11,9 +11,9 @@ public class AddressService(
     IAddressRepository addressRepository
     ) : IAddressService
 {
-    public async Task<PagedResult<AddressListDto>> GetAll(int page, int pageSize, CancellationToken ct)
+    public async Task<PagedResult<AddressListDto>> GetAll(AddressQueryDto queryDto, CancellationToken ct)
     {
-        var result = await addressRepository.GetAll(page, pageSize, ct);
+        var result = await addressRepository.GetAddresses(queryDto, ct);
 
         logger.LogInformation("Loaded {Count} of {Total} addresses", result.Items.Count, result.Total);
         return result;
@@ -61,9 +61,9 @@ public class AddressService(
         return AddressMapper.ToDetail(address);
     }
 
-    public async Task Delete(int id, CancellationToken ct)
+    public async Task<bool> Delete(int id, CancellationToken ct)
     {
-        await addressRepository.Delete(id, ct);
+        return await addressRepository.Delete(id, ct);
     }
     // Find-or-create keeps Country/Location normalized (shared by many addresses).
     private async Task<Location> ResolveLocation(AddressCreateDto dto, CancellationToken ct)
