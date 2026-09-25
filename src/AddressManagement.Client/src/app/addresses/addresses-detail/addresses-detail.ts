@@ -8,7 +8,6 @@ import {Skeleton} from '../../shared/skeleton';
 @Component({
   imports: [MatButton, MatIcon, Skeleton],
   selector: 'app-addresses-detail',
-  styleUrl: './addresses-detail.css',
   templateUrl: './addresses-detail.html',
 })
 export class AddressesDetail {
@@ -17,6 +16,6 @@ export class AddressesDetail {
   protected readonly labels = AddressLabels
 
   protected remove() {
-    if (confirm('Adresse wirklich löschen?')) this.store.remove()
+    if (confirm('Delete this address?')) this.store.remove()
   }
 }

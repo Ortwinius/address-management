@@ -32,6 +32,13 @@ html {
   ));
 }
 
+// Icon buttons in the toolbar sit on the primary color.
+.mat-toolbar {
+  @include mat.icon-button-overrides((
+    icon-color: var(--mat-sys-on-primary),
+  ));
+}
+
 // Error toasts use the theme's error colors instead of the default dark snack bar.
 .toast-error {
   @include mat.snack-bar-overrides((

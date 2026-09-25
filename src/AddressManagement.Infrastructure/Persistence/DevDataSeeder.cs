@@ -20,7 +20,7 @@ public static class DevDataSeeder
         if (missing <= 0) return;
 
         // Reuse countries that already exist (name is unique).
-        string[] names = ["Österreich", "Deutschland", "Schweiz", "Luxemburg", "Liechtenstein"];
+        string[] names = ["Austria", "Germany", "Switzerland", "Luxembourg", "Liechtenstein"];
         var countries = await db.Countries.Where(c => names.Contains(c.Name)).ToListAsync();
         countries.AddRange(names.Except(countries.Select(c => c.Name)).Select(n => new Country { Name = n }));
 
@@ -35,9 +35,20 @@ public static class DevDataSeeder
         await db.SaveChangesAsync();
         var locationIds = locations.Select(l => l.Id).ToArray();
 
+        // Half people, half companies (name is unique).
+        var recipients = new Faker<Recipient>("de")
+            .RuleFor(r => r.Name, f => f.Random.Bool() ? f.Name.FullName() : f.Company.CompanyName())
+            .Generate(RecipientCount)
+            .DistinctBy(r => r.Name)
+            .ToList();
+        db.Recipients.AddRange(recipients);
+        await db.SaveChangesAsync();
+        var recipientIds = recipients.Select(r => r.Id).ToArray();
+
         var addresses = new Faker<Address>("de")
             .RuleFor(a => a.Street, f => f.Address.StreetAddress())
-            .RuleFor(a => a.LocationId, f => f.PickRandom(locationIds));
+            .RuleFor(a => a.LocationId, f => f.PickRandom(locationIds))
+            .RuleFor(a => a.RecipientId, f => f.PickRandom(recipientIds));
 
         for (var seeded = 0; seeded < missing; seeded += BatchSize)
         {

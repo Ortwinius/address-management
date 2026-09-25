@@ -12,7 +12,7 @@
 
 <div class="flex gap-2">
   <button mat-flat-button [disabled]="form().invalid() || store.busy()" (click)="save()">
-    @if (store.busy()) { <mat-spinner diameter="18"/> } @else { Speichern }
+    @if (store.busy()) { <mat-spinner diameter="18"/> } @else { Save }
   </button>
-  <button mat-button (click)="store.cancelEdit()">Abbrechen</button>
+  <button mat-button (click)="store.cancelEdit()">Cancel</button>
 </div>

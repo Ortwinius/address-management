@@ -1,15 +1,15 @@
 import {computed, inject, Injectable, linkedSignal, signal} from '@angular/core';
-import {toObservable, toSignal} from '@angular/core/rxjs-interop';
 import {HttpClient, httpResource} from '@angular/common/http';
-import {debounceTime, finalize, Observable} from 'rxjs';
 import {Sort} from '@angular/material/sort';
 import {Toaster} from '../shared/toaster';
+import {debouncedSignal} from '../shared/debounced-signal';
+import {withoutEmpty} from '../shared/http-params';
+import {send} from '../shared/send';
 import {AddressCreate, AddressDetail, AddressListItem, Country, PagedResult} from './addresses.models';
 
 export type PanelMode = 'closed' | 'view' | 'edit' | 'new'
 
-type TextFilter = { street: string; location: string }
-export type Filter = TextFilter & { countries: string[]; sort: Sort }
+type Filter = { street: string; location: string; countries: string[]; sort: Sort }
 type Page = { index: number; size: number }
 
 const Url = '/api/addresses'
@@ -29,12 +29,15 @@ export class AddressStore {
   readonly sort = signal<Sort>({ active: 'street', direction: 'asc' })
 
   // Only free text is debounced, so typing does not fire a request per key.
-  private readonly text = toSignal(
-    toObservable(computed<TextFilter>(() => ({ street: this.streetInput(), location: this.locationInput() })))
-      .pipe(debounceTime(DebounceTimeInMs)),
-    { initialValue: { street: '', location: '' }, equal: (a, b) => a.street === b.street && a.location === b.location })
+  private readonly street = debouncedSignal(this.streetInput, DebounceTimeInMs)
+  private readonly location = debouncedSignal(this.locationInput, DebounceTimeInMs)
 
-  readonly filter = computed<Filter>(() => ({ ...this.text(), countries: this.countriesInput(), sort: this.sort() }))
+  private readonly filter = computed<Filter>(() => ({
+    street: this.street(),
+    location: this.location(),
+    countries: this.countriesInput(),
+    sort: this.sort(),
+  }))
 
   // Any filter or sort change jumps back to the first page, the page size is kept.
   readonly page = linkedSignal<Filter, Page>({
@@ -54,11 +57,12 @@ export class AddressStore {
       }),
     }
   })
-  readonly items = computed(() => this.addresses.value()?.items ?? [])
-  readonly total = computed(() => this.addresses.value()?.total ?? 0)
+  // value() throws while a resource is in error state, hence the hasValue() checks.
+  readonly items = computed(() => this.addresses.hasValue() ? this.addresses.value().items : [])
+  readonly total = computed(() => this.addresses.hasValue() ? this.addresses.value().total : 0)
 
   private readonly countries = httpResource<Country[]>(() => `${Url}/countries`)
-  readonly countryOptions = computed(() => this.countries.value() ?? [])
+  readonly countryOptions = computed(() => this.countries.hasValue() ? this.countries.value() : [])
 
   // --- Side panel: the selected address and what the panel shows ---
 
@@ -96,8 +100,8 @@ export class AddressStore {
       ? this.http.post<AddressDetail>(Url, address)
       : this.http.put<AddressDetail>(`${Url}/${id}`, address)
 
-    this.send(request, saved => {
-      this.toaster.success(id === null ? 'Adresse angelegt' : 'Adresse gespeichert')
+    send(request, this.busy, saved => {
+      this.toaster.success(id === null ? 'Address created' : 'Address saved')
       this.addresses.reload()
       this.countries.reload() // a new country may have been created
       this.selectedId.set(saved.id)
@@ -110,24 +114,19 @@ export class AddressStore {
     const id = this.selectedId()
     if (id === null) return
 
-    this.send(this.http.delete(`${Url}/${id}`), () => {
-      this.toaster.success('Adresse gelöscht')
+    send(this.http.delete(`${Url}/${id}`), this.busy, () => {
+      this.toaster.success('Address deleted')
       this.addresses.reload()
       this.close()
     })
   }
 
-  // Failed requests are already toasted by httpErrorInterceptor, so the error is only swallowed here.
-  private send<T>(request: Observable<T>, onSuccess: (response: T) => void) {
-    this.busy.set(true)
-    request
-      .pipe(finalize(() => this.busy.set(false)))
-      .subscribe({ next: onSuccess, error: () => {} })
+  removeMany(ids: number[]) {
+    send(this.http.delete(Url, { params: { ids } }), this.busy, () => {
+      this.toaster.success(`${ids.length} addresses deleted`)
+      this.addresses.reload()
+      const open = this.selectedId()
+      if (open !== null && ids.includes(open)) this.close()
+    })
   }
-}
-
-// Drops unset filters so the URL only carries what is actually filtered.
-function withoutEmpty(params: Record<string, string | number | boolean | string[]>) {
-  return Object.fromEntries(
-    Object.entries(params).filter(([_, v]) => v !== '' && !(Array.isArray(v) && v.length === 0)))
 }

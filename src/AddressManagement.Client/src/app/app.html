@@ -1,6 +1,11 @@
 <mat-toolbar class="sticky top-0 z-10 gap-2">
   <mat-icon>location_on</mat-icon>
-  <span>Addresso</span>
+  <span class="flex-1">Addresso</span>
+  @if (auth.isLoggedIn()) {
+    <button mat-icon-button aria-label="Sign out" (click)="auth.logout()">
+      <mat-icon>logout</mat-icon>
+    </button>
+  }
 </mat-toolbar>
 
 <router-outlet/>

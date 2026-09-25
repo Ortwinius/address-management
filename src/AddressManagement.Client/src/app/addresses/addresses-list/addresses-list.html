@@ -1,16 +1,16 @@
 <div class="flex flex-wrap items-center gap-2 p-4">
   <mat-form-field class="grow basis-48" subscriptSizing="dynamic">
-    <mat-label>Straße</mat-label>
+    <mat-label>Street</mat-label>
     <input matInput [value]="store.streetInput()" (input)="store.streetInput.set($any($event.target).value)"/>
   </mat-form-field>
 
   <mat-form-field class="grow basis-48" subscriptSizing="dynamic">
-    <mat-label>Ort</mat-label>
+    <mat-label>Location</mat-label>
     <input matInput [value]="store.locationInput()" (input)="store.locationInput.set($any($event.target).value)"/>
   </mat-form-field>
 
   <mat-form-field class="grow basis-48" subscriptSizing="dynamic">
-    <mat-label>Land</mat-label>
+    <mat-label>Country</mat-label>
     <mat-select multiple [value]="store.countriesInput()" (selectionChange)="store.countriesInput.set($event.value)">
       @for (c of store.countryOptions(); track c.name) {
         <mat-option [value]="c.name">{{ c.name }}</mat-option>
@@ -20,8 +20,20 @@
 
   <button mat-flat-button class="ml-auto" (click)="store.create()">
     <mat-icon>add</mat-icon>
-    Neue Adresse
+    New address
   </button>
+</div>
+
+<div class="flex h-10 items-center gap-2 px-4">
+  @if (selection().hasValue()) {
+    <span>{{ selection().selected.length }} selected</span>
+    <button mat-button class="danger" [disabled]="store.busy()" (click)="removeSelected()">
+      <mat-icon>delete</mat-icon>
+      Delete selected
+    </button>
+  } @else {
+    <span class="text-(--mat-sys-on-surface-variant)">{{ store.total() | number }} addresses</span>
+  }
 </div>
 
 <div class="h-1">
@@ -69,9 +81,9 @@
         @if (store.addresses.isLoading()) {
           <app-skeleton/>
         } @else if (store.addresses.error()) {
-          <p class="py-4">Adressen konnten nicht geladen werden.</p>
+          <p class="py-4">Addresses could not be loaded.</p>
         } @else {
-          <p class="py-4">Keine Adressen gefunden.</p>
+          <p class="py-4">No addresses found.</p>
         }
       </td>
     </tr>

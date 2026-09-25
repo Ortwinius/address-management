@@ -3,3 +3,8 @@
 
 html, body { height: 100%; }
 body { margin: 0; }
+
+/* Text buttons for destructive actions. */
+.danger {
+  --mat-button-text-label-text-color: var(--mat-sys-error);
+}

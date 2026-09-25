@@ -34,8 +34,9 @@ public class AddressRepository(AddressDbContext dbContext) : IAddressRepository
         Expression<Func<Address, string>> key = queryDto.SortCol switch
         {
             "zipCode" => a => a.Location.ZipCode,
-            "street" => a => a.Street,
+            "location" => a => a.Location.Name,
             "country" => a => a.Location.Country.Name,
+            "recipient" => a => a.Recipient.Name,
             _ => a => a.Street
         };
         
@@ -53,6 +54,7 @@ public class AddressRepository(AddressDbContext dbContext) : IAddressRepository
     public Task<Address?> GetById(int id, CancellationToken ct) =>
         dbContext.Addresses
             .AsNoTracking()
+            .Include(a => a.Recipient)
             .Include(a => a.Location)
             .ThenInclude(l => l.Country)
             .FirstOrDefaultAsync(a => a.Id == id, ct);
@@ -79,6 +81,9 @@ public class AddressRepository(AddressDbContext dbContext) : IAddressRepository
         return deletedCount > 0;
     }
 
+    public Task<int> DeleteMany(int[] ids, CancellationToken ct) =>
+        dbContext.Addresses.Where(a => ids.Contains(a.Id)).ExecuteDeleteAsync(ct);
+
     public async Task<IEnumerable<CountryDto>> GetCountries(CancellationToken ct)
     {
         var countries = await dbContext.Countries
@@ -89,6 +94,9 @@ public class AddressRepository(AddressDbContext dbContext) : IAddressRepository
         return countries;
     }
     
+    public Task<Recipient?> FindRecipient(string name, CancellationToken ct) =>
+        dbContext.Recipients.FirstOrDefaultAsync(r => r.Name == name, ct);
+
     public Task<Country?> FindCountry(string name, CancellationToken ct) =>
         dbContext.Countries.FirstOrDefaultAsync(c => c.Name == name, ct);
 

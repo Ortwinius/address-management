@@ -39,8 +39,8 @@ export class AddressesPage {
 
   protected readonly titles: Record<PanelMode, string> = {
     closed: '',
-    view: 'Adresse',
-    edit: 'Adresse bearbeiten',
-    new: 'Neue Adresse',
+    view: 'Address',
+    edit: 'Edit address',
+    new: 'New address',
   }
 }

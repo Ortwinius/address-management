@@ -14,6 +14,8 @@ public interface IAddressService
     Task<AddressDetailDto?> Update(int id, AddressCreateDto addressDto, CancellationToken ct);
 
     Task<bool> Delete(int id, CancellationToken ct);
+
+    Task<int> DeleteMany(int[] ids, CancellationToken ct);
     
     Task<IEnumerable<CountryDto>> GetCountries(CancellationToken ct);
 }

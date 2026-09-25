@@ -1,6 +1,7 @@
 import {Component, computed, inject, input, linkedSignal} from '@angular/core';
+import {DecimalPipe} from '@angular/common';
 import {AddressField, AddressLabels, AddressListItem} from '../addresses.models';
-import {AddressStore, Filter} from '../address-store';
+import {AddressStore} from '../address-store';
 import {Skeleton} from '../../shared/skeleton';
 import {MatPaginator} from '@angular/material/paginator';
 import {MatFormField, MatInput, MatLabel} from '@angular/material/input';
@@ -27,6 +28,7 @@ const CompactColumns: AddressField[] = ['street', 'location', 'country']
 
 @Component({
   imports: [
+    DecimalPipe,
     Skeleton,
     MatFormField,
     MatLabel,
@@ -68,8 +70,9 @@ export class AddressesList {
 
   readonly initialRowSelection = [];
   readonly allowMultiSelect = true;
-  readonly selection = linkedSignal<Filter,SelectionModel<AddressListItem>>({
-    source: this.store.filter,
+  // Tied to the rows on the current page: paging, filtering and reloading clear it.
+  readonly selection = linkedSignal<AddressListItem[],SelectionModel<AddressListItem>>({
+    source: this.store.items,
     computation: (_, previous) => (new SelectionModel<AddressListItem>(this.allowMultiSelect, this.initialRowSelection)),
   })
 
@@ -84,5 +87,10 @@ export class AddressesList {
     this.isAllSelected() ?
       this.selection().clear() :
       this.store.items().forEach(row => this.selection().select(row));
+  }
+
+  protected removeSelected() {
+    const ids = this.selection().selected.map(a => a.id)
+    if (confirm(`Delete ${ids.length} addresses?`)) this.store.removeMany(ids)
   }
 }

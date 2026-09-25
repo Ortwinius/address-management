@@ -6,10 +6,8 @@ import {MatProgressSpinner} from '@angular/material/progress-spinner';
 import {AddressCreate, AddressDetail, AddressField, AddressFields, AddressLabels} from '../addresses.models';
 import {AddressStore} from '../address-store';
 
-// Inputs work with strings, the API uses null for empty optional fields.
+// Inputs work with strings, the API uses null for an empty address affix.
 type AddressFormValue = Record<AddressField, string>
-
-const RequiredMessage = { message: 'Pflichtfeld' }
 
 @Component({
   imports: [
@@ -34,10 +32,11 @@ export class AddressesForm {
   protected readonly labels = AddressLabels
   protected readonly model = linkedSignal(() => toFormValue(this.address()))
   protected readonly form = form(this.model, p => {
-    required(p.street, RequiredMessage);
-    required(p.zipCode, RequiredMessage);
-    required(p.location, RequiredMessage);
-    required(p.country, RequiredMessage);
+    required(p.street);
+    required(p.zipCode);
+    required(p.location);
+    required(p.country);
+    required(p.recipient);
   })
 
   protected save() {
@@ -57,5 +56,5 @@ function toFormValue(a?: AddressDetail): AddressFormValue {
 }
 
 function toAddressCreate(v: AddressFormValue): AddressCreate {
-  return { ...v, recipient: v.recipient || null, addressAffix: v.addressAffix || null }
+  return { ...v, addressAffix: v.addressAffix || null }
 }

@@ -1,11 +1,11 @@
-using System.Globalization;
-
 using AddressManagement.Application;
 using AddressManagement.Application.Services;
 using AddressManagement.Application.Validators;
 using AddressManagement.Infrastructure.Persistence;
 using AddressManagement.Infrastructure.Repositories;
 using FluentValidation;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 
@@ -22,7 +22,17 @@ builder.Services.AddScoped<IAddressRepository, AddressRepository>();
 
 builder.Services.AddScoped<IAddressService, AddressService>();
 builder.Services.AddValidatorsFromAssemblyContaining<AddressCreateDtoValidator>();
-ValidatorOptions.Global.LanguageManager.Culture = new CultureInfo("de");
+
+// Google Sign-In: the client sends Google's ID token as bearer token, validated against Google's public keys.
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.Authority = "https://accounts.google.com";
+        options.Audience = builder.Configuration["Google:ClientId"];
+        options.TokenValidationParameters.ValidIssuers = ["https://accounts.google.com", "accounts.google.com"];
+    });
+builder.Services.AddAuthorizationBuilder()
+    .SetFallbackPolicy(new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build()); // every endpoint
 
 builder.Services.AddProblemDetails();
 
@@ -33,8 +43,8 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
-    app.MapScalarApiReference();
+    app.MapOpenApi().AllowAnonymous();
+    app.MapScalarApiReference().AllowAnonymous();
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<AddressDbContext>();
     await db.Database.MigrateAsync();
@@ -48,6 +58,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseExceptionHandler();
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 

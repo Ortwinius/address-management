@@ -30,7 +30,7 @@ public class AddressService(
         var address = new Address
         {
             Street = dto.Street,
-            Recipient = dto.Recipient,
+            Recipient = await ResolveRecipient(dto.Recipient, ct),
             AddressAffix = dto.AddressAffix,
             Location = await ResolveLocation(dto, ct)
         };
@@ -50,7 +50,7 @@ public class AddressService(
         }
 
         address.Street = dto.Street;
-        address.Recipient = dto.Recipient;
+        address.Recipient = await ResolveRecipient(dto.Recipient, ct);
         address.AddressAffix = dto.AddressAffix;
         // Re-point to a (possibly new) Location instead of editing the shared one.
         address.Location = await ResolveLocation(dto, ct);
@@ -65,6 +65,17 @@ public class AddressService(
     {
         return await addressRepository.Delete(id, ct);
     }
+
+    public async Task<int> DeleteMany(int[] ids, CancellationToken ct)
+    {
+        var deleted = await addressRepository.DeleteMany(ids, ct);
+        logger.LogInformation("Deleted {Count} addresses", deleted);
+        return deleted;
+    }
+
+    // Find-or-create, so one person or company is stored once and shared by its addresses.
+    private async Task<Recipient> ResolveRecipient(string name, CancellationToken ct) =>
+        await addressRepository.FindRecipient(name, ct) ?? new Recipient { Name = name };
     // Find-or-create keeps Country/Location normalized (shared by many addresses).
     private async Task<Location> ResolveLocation(AddressCreateDto dto, CancellationToken ct)
     {

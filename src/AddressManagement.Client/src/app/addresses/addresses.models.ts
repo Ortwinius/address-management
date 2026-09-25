@@ -4,6 +4,7 @@ export type AddressListItem = {
   zipCode: string;
   location: string;
   country: string;
+  recipient: string;
 }
 
 export type AddressCreate = {
@@ -11,7 +12,7 @@ export type AddressCreate = {
   zipCode: string;
   location: string;
   country: string;
-  recipient: string | null;
+  recipient: string;
   addressAffix: string | null;
 }
 
@@ -32,12 +33,12 @@ export type PagedResult<T> = {
 
 // One place for field labels, shared by table, detail view and form.
 export const AddressLabels = {
-  street: 'Straße',
-  zipCode: 'PLZ',
-  location: 'Ort',
-  country: 'Land',
-  recipient: 'Empfänger',
-  addressAffix: 'Adresszusatz',
+  street: 'Street',
+  zipCode: 'Zip code',
+  location: 'Location',
+  country: 'Country',
+  recipient: 'Recipient',
+  addressAffix: 'Address affix',
 } satisfies Record<keyof AddressCreate, string>
 
 export type AddressField = keyof typeof AddressLabels

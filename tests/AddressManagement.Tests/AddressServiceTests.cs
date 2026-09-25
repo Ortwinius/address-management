@@ -23,7 +23,7 @@ public class AddressServiceTests
 
         var service = new AddressService(NullLogger<AddressService>.Instance, repository);
 
-        await service.Add(new AddressCreateDto("Teststraße 1", "1210", "Wien", "Austria", null, null), CancellationToken.None);
+        await service.Add(new AddressCreateDto("Teststraße 1", "1210", "Wien", "Austria", "Max Mustermann", null), CancellationToken.None);
 
         await repository.Received(1).Add(
             Arg.Is<Address>(a => a.Location == location && a.Location.Country == country),

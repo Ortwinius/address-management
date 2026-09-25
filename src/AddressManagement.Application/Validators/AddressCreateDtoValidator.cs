@@ -12,5 +12,6 @@ public class AddressCreateDtoValidator : AbstractValidator<AddressCreateDto>
         RuleFor(x => x.ZipCode).NotEmpty();
         RuleFor(x => x.Location).NotEmpty();
         RuleFor(x => x.Country).NotEmpty();
+        RuleFor(x => x.Recipient).NotEmpty();
     }
 }

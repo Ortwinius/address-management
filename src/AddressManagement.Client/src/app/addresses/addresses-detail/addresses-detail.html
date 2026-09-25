@@ -9,15 +9,15 @@
   <div class="mt-6 flex gap-2">
     <button mat-flat-button (click)="store.edit()">
       <mat-icon>edit</mat-icon>
-      Bearbeiten
+      Edit
     </button>
     <button mat-button class="danger" [disabled]="store.busy()" (click)="remove()">
       <mat-icon>delete</mat-icon>
-      Löschen
+      Delete
     </button>
   </div>
 } @else if (store.detail.isLoading()) {
   <app-skeleton [count]="6"/>
 } @else {
-  <p>Adresse konnte nicht geladen werden.</p>
+  <p>Address could not be loaded.</p>
 }

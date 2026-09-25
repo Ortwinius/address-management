@@ -7,8 +7,9 @@ public class Address
 {
     [Key] public int Id { get; set; }
     [MaxLength(200)] public required string Street { get; set; } /* e.g. "Neubaugasse 2-8", includes house number etc. */
-    public string? Recipient { get; set; }
-    public string? AddressAffix { get; set; } /* "Addresszusatz" */
+    public string? AddressAffix { get; set; } /* e.g. "c/o", floor or door number */
+    public int RecipientId { get; set; }
+    public Recipient Recipient { get; set; } = null!;
     public int LocationId { get; set; }
     public Location Location { get; set; } = null!;
 }
@@ -30,6 +31,7 @@ public class Country
     public ICollection<Location> Locations { get; set; } = [];
 }
 
+// Name of a person or company, shared by addresses (and later e.g. invoices).
 public class Recipient
 {
     [Key] public int Id { get; set; }

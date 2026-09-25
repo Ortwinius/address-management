@@ -12,7 +12,9 @@ public interface IAddressRepository
 
     Task Update(Address address, CancellationToken ct);
     Task<bool> Delete(int id, CancellationToken ct);
+    Task<int> DeleteMany(int[] ids, CancellationToken ct);
     Task<IEnumerable<CountryDto>> GetCountries(CancellationToken ct);
+    Task<Recipient?> FindRecipient(string name, CancellationToken ct);
     Task<Country?> FindCountry(string name, CancellationToken ct);
     Task<Location?> FindLocation(int countryId, string zipCode, string name, CancellationToken ct);
 }

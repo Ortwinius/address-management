@@ -10,6 +10,7 @@ public class AddressDbContext(DbContextOptions<AddressDbContext> options) : DbCo
     public DbSet<Address> Addresses => Set<Address>();
     public DbSet<Location> Locations => Set<Location>();
     public DbSet<Country> Countries => Set<Country>();
+    public DbSet<Recipient> Recipients => Set<Recipient>();
     
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -26,6 +27,9 @@ public class AddressConfiguration : IEntityTypeConfiguration<Address>
         b.Property(a => a.Street).HasMaxLength(200);
         b.HasOne(a => a.Location).WithMany(l => l.Addresses)
             .HasForeignKey(a => a.LocationId)
+            .OnDelete(DeleteBehavior.Restrict);
+        b.HasOne(a => a.Recipient).WithMany(r => r.Addresses)
+            .HasForeignKey(a => a.RecipientId)
             .OnDelete(DeleteBehavior.Restrict);
         b.HasIndex(a => a.Street)
             .HasMethod("gin").HasOperators("gin_trgm_ops"); /* for efficient string pattern matching */
@@ -51,5 +55,14 @@ public class CountryConfiguration : IEntityTypeConfiguration<Country>
     {
         b.Property(c => c.Name).HasMaxLength(100);
         b.HasIndex(c => c.Name).IsUnique();
+    }
+}
+
+public class RecipientConfiguration : IEntityTypeConfiguration<Recipient>
+{
+    public void Configure(EntityTypeBuilder<Recipient> b)
+    {
+        b.Property(r => r.Name).HasMaxLength(200);
+        b.HasIndex(r => r.Name).IsUnique();
     }
 }

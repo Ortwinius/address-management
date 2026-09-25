@@ -63,6 +63,13 @@ public class AddressController(
         return deleted ? Ok() : NotFound();
     }
     
+    [HttpDelete]
+    public async Task<ActionResult> DeleteMany([FromQuery] int[] ids, CancellationToken ct = default)
+    {
+        await addressService.DeleteMany(ids, ct);
+        return NoContent();
+    }
+
     [HttpGet("countries")]
     public async Task<IEnumerable<CountryDto>> GetCountries(CancellationToken ct)
     {
