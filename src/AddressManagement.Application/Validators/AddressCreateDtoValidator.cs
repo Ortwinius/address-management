@@ -8,7 +8,9 @@ public class AddressCreateDtoValidator : AbstractValidator<AddressCreateDto>
 {
     public AddressCreateDtoValidator()
     {
-        RuleFor(x => x.Street).MinimumLength(1);
-        // TODO: define rules, e.g. RuleFor(x => x.Street)...
+        RuleFor(x => x.Street).NotEmpty().MinimumLength(1);
+        RuleFor(x => x.ZipCode).NotEmpty();
+        RuleFor(x => x.Location).NotEmpty();
+        RuleFor(x => x.Country).NotEmpty();
     }
 }

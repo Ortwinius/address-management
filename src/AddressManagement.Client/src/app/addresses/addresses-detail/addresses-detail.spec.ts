@@ -2,19 +2,19 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { AddressStore } from '../address-store';
-import { AddressesForm } from './addresses-form';
+import { AddressesDetail } from './addresses-detail';
 
-describe('AddressesForm', () => {
-  let component: AddressesForm;
-  let fixture: ComponentFixture<AddressesForm>;
+describe('AddressesDetail', () => {
+  let component: AddressesDetail;
+  let fixture: ComponentFixture<AddressesDetail>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       providers: [AddressStore, provideHttpClient(), provideHttpClientTesting()],
-      imports: [AddressesForm],
+      imports: [AddressesDetail],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(AddressesForm);
+    fixture = TestBed.createComponent(AddressesDetail);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

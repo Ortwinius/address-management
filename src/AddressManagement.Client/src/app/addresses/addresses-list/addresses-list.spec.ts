@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { AddressStore } from '../address-store';
 import { AddressesList } from './addresses-list';
 
 describe('AddressesList', () => {
@@ -9,7 +10,7 @@ describe('AddressesList', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      providers: [provideHttpClient(), provideHttpClientTesting()],
+      providers: [AddressStore, provideHttpClient(), provideHttpClientTesting()],
       imports: [AddressesList],
     }).compileComponents();
 

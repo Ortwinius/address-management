@@ -1,12 +1,12 @@
-import { Component, signal } from '@angular/core';
+import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { MatToolbar } from '@angular/material/toolbar';
+import { MatIcon } from '@angular/material/icon';
 
 @Component({
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, MatToolbar, MatIcon],
   selector: 'app-root',
-  styleUrl: './app.css',
+  host: { class: 'flex h-dvh flex-col' },
   templateUrl: './app.html',
 })
-export class App {
-  protected readonly title = signal('address-management-client');
-}
+export class App {}

@@ -10,6 +10,7 @@ namespace AddressManagement.Infrastructure.Persistence;
 public static class DevDataSeeder
 {
     private const int LocationCount = 1_000;
+    private const int RecipientCount = 1_000;
     private const int BatchSize = 10_000; // keeps EF change tracking small
 
     // Tops the address table up to targetCount.
@@ -19,7 +20,7 @@ public static class DevDataSeeder
         if (missing <= 0) return;
 
         // Reuse countries that already exist (name is unique).
-        string[] names = ["Österreich", "Deutschland", "Schweiz"];
+        string[] names = ["Österreich", "Deutschland", "Schweiz", "Luxemburg", "Liechtenstein"];
         var countries = await db.Countries.Where(c => names.Contains(c.Name)).ToListAsync();
         countries.AddRange(names.Except(countries.Select(c => c.Name)).Select(n => new Country { Name = n }));
 

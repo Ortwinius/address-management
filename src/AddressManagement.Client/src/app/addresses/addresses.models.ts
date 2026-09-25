@@ -29,3 +29,16 @@ export type PagedResult<T> = {
   pageSize: number;
   page: number;
 }
+
+// One place for field labels, shared by table, detail view and form.
+export const AddressLabels = {
+  street: 'Straße',
+  zipCode: 'PLZ',
+  location: 'Ort',
+  country: 'Land',
+  recipient: 'Empfänger',
+  addressAffix: 'Adresszusatz',
+} satisfies Record<keyof AddressCreate, string>
+
+export type AddressField = keyof typeof AddressLabels
+export const AddressFields = Object.keys(AddressLabels) as AddressField[]

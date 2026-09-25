@@ -2,12 +2,15 @@ import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/
 import { provideRouter } from '@angular/router';
 import { routes } from './app.routes';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
-import { httpLogInterceptor } from './core/http-log.interceptor';
+import { MatPaginatorIntl } from '@angular/material/paginator';
+import { httpErrorInterceptor } from './shared/http-error.interceptor';
+import { GermanPaginatorIntl } from './shared/german-paginator-intl';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
-    provideHttpClient(withInterceptors([httpLogInterceptor]))
+    provideHttpClient(withInterceptors([httpErrorInterceptor])),
+    { provide: MatPaginatorIntl, useClass: GermanPaginatorIntl },
   ]
 };

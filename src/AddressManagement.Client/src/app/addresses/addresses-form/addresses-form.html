@@ -1,32 +1,18 @@
-<h2>{{selectedId() ? 'Adresse bearbeiten' : 'Adresse erstellen'}}</h2>
-
-<div class="flex flex-col justify-center items-start">
-  <mat-form-field>
-    <mat-label>Straße</mat-label>
-    <input matInput [formField]="form.street">
-    @for (e of form.street().errors(); track $index){ <mat-error> {{e.message ?? e.kind}} </mat-error> }
-  </mat-form-field>
-
-  <mat-form-field>
-    <mat-label>Postleitzahl</mat-label>
-    <input matInput [formField]="form.zipCode">
-    @for (e of form.zipCode().errors(); track $index){ <mat-error> {{e.message ?? e.kind}} </mat-error> }
-  </mat-form-field>
-
-  <mat-form-field>
-    <mat-label>Ort</mat-label>
-    <input matInput [formField]="form.location">
-    @for (e of form.location().errors(); track $index){ <mat-error> {{e.message ?? e.kind}} </mat-error> }
-  </mat-form-field>
-
-  <mat-form-field>
-    <mat-label>Land</mat-label>
-    <input matInput [formField]="form.country">
-    @for (e of form.country().errors(); track $index){ <mat-error> {{e.message ?? e.kind}} </mat-error> }
-  </mat-form-field>
+<div class="flex flex-col">
+  @for (field of fields; track field) {
+    <mat-form-field class="mt-1">
+      <mat-label>{{ labels[field] }}</mat-label>
+      <input matInput [formField]="form[field]">
+      @for (e of form[field]().errors(); track $index) {
+        <mat-error>{{ e.message ?? e.kind }}</mat-error>
+      }
+    </mat-form-field>
+  }
 </div>
 
-<button mat-flat-button [disabled]="form().invalid() || saving()" (click)="save()">
-  @if (saving()) { <mat-spinner diameter="18"/> } @else { Speichern }
-</button>
-<button mat-flat-button (click)="reset()">Neu</button>
+<div class="flex gap-2">
+  <button mat-flat-button [disabled]="form().invalid() || store.busy()" (click)="save()">
+    @if (store.busy()) { <mat-spinner diameter="18"/> } @else { Speichern }
+  </button>
+  <button mat-button (click)="store.cancelEdit()">Abbrechen</button>
+</div>

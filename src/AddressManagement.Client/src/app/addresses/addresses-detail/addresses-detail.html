@@ -1,0 +1,23 @@
+@if (store.selected(); as address) {
+  <dl class="grid grid-cols-[auto_1fr] gap-x-6 gap-y-3">
+    @for (field of fields; track field) {
+      <dt class="text-(--mat-sys-on-surface-variant)">{{ labels[field] }}</dt>
+      <dd>{{ address[field] || '-' }}</dd>
+    }
+  </dl>
+
+  <div class="mt-6 flex gap-2">
+    <button mat-flat-button (click)="store.edit()">
+      <mat-icon>edit</mat-icon>
+      Bearbeiten
+    </button>
+    <button mat-button class="danger" [disabled]="store.busy()" (click)="remove()">
+      <mat-icon>delete</mat-icon>
+      Löschen
+    </button>
+  </div>
+} @else if (store.detail.isLoading()) {
+  <app-skeleton [count]="6"/>
+} @else {
+  <p>Adresse konnte nicht geladen werden.</p>
+}

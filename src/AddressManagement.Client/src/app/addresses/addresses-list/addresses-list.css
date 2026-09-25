@@ -1,0 +1,17 @@
+/* Checkbox column only as wide as the checkbox. */
+.mat-column-select {
+  width: 56px;
+}
+
+.address-row {
+  cursor: pointer;
+  transition: background-color 120ms;
+}
+
+.address-row:hover {
+  background-color: var(--mat-sys-surface-container-high);
+}
+
+.address-row.selected {
+  background-color: var(--mat-sys-secondary-container);
+}
