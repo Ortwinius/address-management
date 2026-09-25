@@ -18,6 +18,8 @@ import {
   MatRow, MatRowDef,
   MatTable
 } from '@angular/material/table';
+import {SelectionModel} from '@angular/cdk/collections';
+import {MatCheckbox} from '@angular/material/checkbox';
 
 type TextFilter = { street: string; location: string }
 type Filter = TextFilter & { countries: string[]; sort: Sort }
@@ -45,7 +47,8 @@ const DebounceTimeInMs = 300;
     MatHeaderRowDef,
     MatHeaderCellDef,
     MatCellDef,
-    MatRowDef
+    MatRowDef,
+    MatCheckbox
   ],
   selector: 'app-addresses-list',
   templateUrl: './addresses-list.html',
@@ -59,7 +62,7 @@ export class AddressesList {
     { id: 'location', label: 'Ort' },
     { id: 'country', label: 'Land' },
   ] as const
-  protected readonly columns = this.columnDefs.map(c => c.id)
+  protected readonly columns = ['select', ...this.columnDefs.map(c => c.id)]
 
   protected readonly streetInput = signal('')
   protected readonly locationInput = signal('')
@@ -99,6 +102,26 @@ export class AddressesList {
   protected readonly uniqueCountryOptions = computed(() => this.countries.hasValue() ? this.countries.value() : [])
 
   reload() { this.addresses.reload() }
+
+  readonly initialRowSelection = [];
+  readonly allowMultiSelect = true;
+  readonly selection = linkedSignal<Filter,SelectionModel<AddressListItem>>({
+    source:this.filter,
+    computation: (_, previous) => (new SelectionModel<AddressListItem>(this.allowMultiSelect, this.initialRowSelection)),
+  })
+
+  isAllSelected() {
+    const numSelected = this.selection().selected.length;
+    const numRows = this.items().length;
+    return numRows > 0 && numSelected == numRows;
+  }
+
+  /** Selects all rows if they are not all selected; otherwise clear selection. */
+  toggleAllRows() {
+    this.isAllSelected() ?
+      this.selection().clear() :
+      this.addresses.value()?.items?.forEach(row => this.selection().select(row));
+  }
 }
 
 // Drops unset filters so the URL only carries what is actually filtered.
