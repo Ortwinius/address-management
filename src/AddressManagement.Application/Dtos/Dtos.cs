@@ -16,7 +16,7 @@ public sealed record AddressDetailDto(
     string Country,
     string Recipient,
     string? AddressAffix
-    );
+);
 
 public sealed record AddressCreateDto(
     string Street, 
@@ -25,7 +25,7 @@ public sealed record AddressCreateDto(
     string Country, 
     string Recipient,
     string? AddressAffix
-    );
+);
 
 public sealed record CountryDto(string Name);
 
@@ -39,9 +39,7 @@ public sealed record AddressQueryDto(
     int PageSize = 10
 )
 {
-    // Upper bound for counting and paging, so neither has to walk millions of rows.
     public const int MaxResults = 100_000;
 }
 
 public sealed record PagedResult<T>(List<T> Items, int Total, bool TotalCapped, int Page, int PageSize);
-

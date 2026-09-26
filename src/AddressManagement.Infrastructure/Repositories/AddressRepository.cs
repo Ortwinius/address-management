@@ -30,6 +30,15 @@ public class AddressRepository(AddressDbContext dbContext) : IAddressRepository
             Page: queryDto.Page,
             PageSize: queryDto.PageSize);
     }
+    
+    // Equality on Street uses the (Street, Id) index, so this stays fast on millions of rows.
+    public Task<bool> Exists(AddressCreateDto dto, int? excludeId, CancellationToken ct) =>
+        dbContext.Addresses.AnyAsync(a =>
+            a.Id != excludeId &&
+            a.Street == dto.Street &&
+            a.Location.ZipCode == dto.ZipCode &&
+            a.Location.Country.Name == dto.Country &&
+            a.Recipient.Name == dto.Recipient, ct);
 
     public Task<Address?> GetById(int id, CancellationToken ct) =>
         dbContext.Addresses

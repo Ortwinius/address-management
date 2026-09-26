@@ -2,11 +2,10 @@ using System.ComponentModel.DataAnnotations;
 
 namespace AddressManagement.Domain;
 
-// public static const int MaxVarCharLength = 255;
 public class Address
 {
     [Key] public int Id { get; set; }
-    [MaxLength(200)] public required string Street { get; set; } /* e.g. "Neubaugasse 2-8", includes house number etc. */
+    public required string Street { get; set; } /* e.g. "Neubaugasse 2-8", includes house number etc. */
     public string? AddressAffix { get; set; } /* e.g. "c/o", floor or door number */
     public int RecipientId { get; set; }
     public Recipient Recipient { get; set; } = null!;

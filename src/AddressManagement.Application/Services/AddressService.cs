@@ -1,4 +1,5 @@
 using AddressManagement.Application.Dtos;
+using AddressManagement.Application.Exceptions;
 using AddressManagement.Application.Mappers;
 using AddressManagement.Domain;
 
@@ -37,6 +38,8 @@ public class AddressService(
             Location = await ResolveLocation(dto, ct)
         };
 
+        await EnsureNotDuplicate(dto, id: null, ct);
+        
         await addressRepository.Add(address, ct);
 
         logger.LogInformation("Created address {AddressId}", address.Id);
@@ -51,6 +54,8 @@ public class AddressService(
             return null;
         }
 
+        await EnsureNotDuplicate(dto, id: id, ct);
+        
         address.Street = dto.Street;
         address.Recipient = await ResolveRecipient(dto.Recipient, ct);
         address.AddressAffix = dto.AddressAffix;
@@ -94,5 +99,13 @@ public class AddressService(
     {
         var countries = await addressRepository.GetCountries(ct);
         return countries;
+    }
+
+    private async Task EnsureNotDuplicate(AddressCreateDto dto, int? id, CancellationToken ct)
+    {
+        if (await addressRepository.Exists(dto, id, ct))
+        {
+            throw new DuplicateAddressException();
+        }
     }
 }
