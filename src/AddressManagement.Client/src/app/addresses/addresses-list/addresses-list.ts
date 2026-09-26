@@ -1,27 +1,30 @@
-import {Component, computed, inject, input, linkedSignal} from '@angular/core';
-import {DecimalPipe} from '@angular/common';
-import {AddressField, AddressLabels, AddressListItem} from '../addresses.models';
-import {AddressStore} from '../address-store';
-import {Skeleton} from '../../shared/skeleton';
-import {MatPaginator} from '@angular/material/paginator';
-import {MatFormField, MatInput, MatLabel} from '@angular/material/input';
-import {MatOption, MatSelect} from '@angular/material/select';
-import {MatSort, MatSortHeader} from '@angular/material/sort';
-import {MatProgressBar} from '@angular/material/progress-bar';
-import {MatButton} from '@angular/material/button';
-import {MatIcon} from '@angular/material/icon';
+import { Component, computed, inject, input, linkedSignal } from '@angular/core'
+import { DecimalPipe } from '@angular/common'
+import { AddressField, AddressLabels, AddressListItem } from '../addresses.models'
+import { AddressStore } from '../address-store'
+import { Skeleton } from '../../shared/skeleton'
+import { MatPaginator } from '@angular/material/paginator'
+import { MatFormField, MatInput, MatLabel } from '@angular/material/input'
+import { MatOption, MatSelect } from '@angular/material/select'
+import { MatSort, MatSortHeader } from '@angular/material/sort'
+import { MatProgressBar } from '@angular/material/progress-bar'
+import { MatButton } from '@angular/material/button'
+import { MatIcon } from '@angular/material/icon'
 import {
-  MatCell, MatCellDef,
+  MatCell,
+  MatCellDef,
   MatColumnDef,
-  MatHeaderCell, MatHeaderCellDef,
+  MatHeaderCell,
+  MatHeaderCellDef,
   MatHeaderRow,
   MatHeaderRowDef,
   MatNoDataRow,
-  MatRow, MatRowDef,
-  MatTable
-} from '@angular/material/table';
-import {SelectionModel} from '@angular/cdk/collections';
-import {MatCheckbox} from '@angular/material/checkbox';
+  MatRow,
+  MatRowDef,
+  MatTable,
+} from '@angular/material/table'
+import { SelectionModel } from '@angular/cdk/collections'
+import { MatCheckbox } from '@angular/material/checkbox'
 
 const AllColumns: AddressField[] = ['street', 'zipCode', 'location', 'country', 'recipient']
 const CompactColumns: AddressField[] = ['street', 'location', 'country']
@@ -52,7 +55,7 @@ const CompactColumns: AddressField[] = ['street', 'location', 'country']
     MatHeaderCellDef,
     MatCellDef,
     MatRowDef,
-    MatCheckbox
+    MatCheckbox,
   ],
   selector: 'app-addresses-list',
   styleUrl: './addresses-list.css',
@@ -66,31 +69,35 @@ export class AddressesList {
 
   protected readonly labels = AddressLabels
   protected readonly dataColumns = AllColumns
-  protected readonly columns = computed(() => ['select', ...(this.compact() ? CompactColumns : AllColumns)])
+  protected readonly columns = computed(() => [
+    'select',
+    ...(this.compact() ? CompactColumns : AllColumns),
+  ])
 
-  readonly initialRowSelection = [];
-  readonly allowMultiSelect = true;
+  readonly initialRowSelection = []
+  readonly allowMultiSelect = true
   // Tied to the rows on the current page: paging, filtering and reloading clear it.
-  readonly selection = linkedSignal<AddressListItem[],SelectionModel<AddressListItem>>({
+  readonly selection = linkedSignal<AddressListItem[], SelectionModel<AddressListItem>>({
     source: this.store.items,
-    computation: (_, previous) => (new SelectionModel<AddressListItem>(this.allowMultiSelect, this.initialRowSelection)),
+    computation: (_, previous) =>
+      new SelectionModel<AddressListItem>(this.allowMultiSelect, this.initialRowSelection),
   })
 
   isAllSelected() {
-    const numSelected = this.selection().selected.length;
-    const numRows = this.store.items().length;
-    return numRows > 0 && numSelected == numRows;
+    const numSelected = this.selection().selected.length
+    const numRows = this.store.items().length
+    return numRows > 0 && numSelected == numRows
   }
 
   /** Selects all rows if they are not all selected; otherwise clear selection. */
   toggleAllRows() {
-    this.isAllSelected() ?
-      this.selection().clear() :
-      this.store.items().forEach(row => this.selection().select(row));
+    this.isAllSelected()
+      ? this.selection().clear()
+      : this.store.items().forEach((row) => this.selection().select(row))
   }
 
   protected removeSelected() {
-    const ids = this.selection().selected.map(a => a.id)
+    const ids = this.selection().selected.map((a) => a.id)
     if (confirm(`Delete ${ids.length} addresses?`)) this.store.removeMany(ids)
   }
 }

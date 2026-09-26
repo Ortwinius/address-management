@@ -2,7 +2,7 @@
   @for (field of fields; track field) {
     <mat-form-field class="mt-1">
       <mat-label>{{ labels[field] }}</mat-label>
-      <input matInput [formField]="form[field]">
+      <input matInput [formField]="form[field]" />
       @for (e of form[field]().errors(); track $index) {
         <mat-error>{{ e.message ?? e.kind }}</mat-error>
       }
@@ -12,7 +12,11 @@
 
 <div class="flex gap-2">
   <button mat-flat-button [disabled]="form().invalid() || store.busy()" (click)="save()">
-    @if (store.busy()) { <mat-spinner diameter="18"/> } @else { Save }
+    @if (store.busy()) {
+      <mat-spinner diameter="18" />
+    } @else {
+      Save
+    }
   </button>
   <button mat-button (click)="store.cancelEdit()">Cancel</button>
 </div>

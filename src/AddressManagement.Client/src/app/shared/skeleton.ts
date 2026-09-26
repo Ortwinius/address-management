@@ -1,4 +1,4 @@
-import {Component, computed, input} from '@angular/core';
+import { Component, computed, input } from '@angular/core'
 
 // Pulsing placeholder lines while data is loading.
 @Component({

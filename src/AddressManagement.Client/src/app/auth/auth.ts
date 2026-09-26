@@ -1,8 +1,9 @@
-import {computed, inject, Injectable, signal} from '@angular/core';
-import {CanActivateFn, Router} from '@angular/router';
+import { computed, inject, Injectable, signal } from '@angular/core'
+import { CanActivateFn, Router } from '@angular/router'
 
 // OAuth client ID from the Google Cloud Console. Public, not a secret; must match Google:ClientId of the API.
-export const GoogleClientId = '1045809102500-sselr5h9ota3mkb0bshvl1h7putr57v4.apps.googleusercontent.com'
+export const GoogleClientId =
+  '1045809102500-sselr5h9ota3mkb0bshvl1h7putr57v4.apps.googleusercontent.com'
 
 const TokenKey = 'auth_id_token'
 
@@ -28,4 +29,5 @@ export class Auth {
   }
 }
 
-export const authGuard: CanActivateFn = () => inject(Auth).isLoggedIn() || inject(Router).parseUrl('/login')
+export const authGuard: CanActivateFn = () =>
+  inject(Auth).isLoggedIn() || inject(Router).parseUrl('/login')

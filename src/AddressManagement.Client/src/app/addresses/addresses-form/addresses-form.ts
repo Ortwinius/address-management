@@ -1,24 +1,22 @@
-import {Component, inject, input, linkedSignal} from '@angular/core';
-import {form, FormField, required} from '@angular/forms/signals';
-import {MatError, MatFormField, MatInput, MatLabel} from '@angular/material/input';
-import {MatButton} from '@angular/material/button';
-import {MatProgressSpinner} from '@angular/material/progress-spinner';
-import {AddressCreate, AddressDetail, AddressField, AddressFields, AddressLabels} from '../addresses.models';
-import {AddressStore} from '../address-store';
+import { Component, inject, input, linkedSignal } from '@angular/core'
+import { form, FormField, required } from '@angular/forms/signals'
+import { MatError, MatFormField, MatInput, MatLabel } from '@angular/material/input'
+import { MatButton } from '@angular/material/button'
+import { MatProgressSpinner } from '@angular/material/progress-spinner'
+import {
+  AddressCreate,
+  AddressDetail,
+  AddressField,
+  AddressFields,
+  AddressLabels,
+} from '../addresses.models'
+import { AddressStore } from '../address-store'
 
 // Inputs work with strings, the API uses null for an empty address affix.
 type AddressFormValue = Record<AddressField, string>
 
 @Component({
-  imports: [
-    MatFormField,
-    MatLabel,
-    MatInput,
-    FormField,
-    MatError,
-    MatButton,
-    MatProgressSpinner
-  ],
+  imports: [MatFormField, MatLabel, MatInput, FormField, MatError, MatButton, MatProgressSpinner],
   selector: 'app-addresses-form',
   templateUrl: './addresses-form.html',
 })
@@ -31,12 +29,12 @@ export class AddressesForm {
   protected readonly fields = AddressFields
   protected readonly labels = AddressLabels
   protected readonly model = linkedSignal(() => toFormValue(this.address()))
-  protected readonly form = form(this.model, p => {
-    required(p.street);
-    required(p.zipCode);
-    required(p.location);
-    required(p.country);
-    required(p.recipient);
+  protected readonly form = form(this.model, (p) => {
+    required(p.street)
+    required(p.zipCode)
+    required(p.location)
+    required(p.country)
+    required(p.recipient)
   })
 
   protected save() {

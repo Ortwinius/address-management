@@ -1,5 +1,5 @@
-import {inject, Injectable} from '@angular/core';
-import {MatSnackBar} from '@angular/material/snack-bar';
+import { inject, Injectable } from '@angular/core'
+import { MatSnackBar } from '@angular/material/snack-bar'
 
 // Single place for user feedback, backed by the Material snack bar.
 @Injectable({ providedIn: 'root' })

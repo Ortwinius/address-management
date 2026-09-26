@@ -1,9 +1,15 @@
-import {computed, inject, Injectable, linkedSignal, signal} from '@angular/core';
-import {HttpClient, httpResource} from '@angular/common/http';
-import {Sort} from '@angular/material/sort';
-import {Toaster} from '../shared/toaster';
-import {AddressCreate, AddressDetail, AddressListItem, Country, PagedResult} from './addresses.models';
-import {debouncedSignal, send, withoutEmpty} from '../shared/helpers';
+import { computed, inject, Injectable, linkedSignal, signal } from '@angular/core'
+import { HttpClient, httpResource } from '@angular/common/http'
+import { Sort } from '@angular/material/sort'
+import { Toaster } from '../shared/toaster'
+import {
+  AddressCreate,
+  AddressDetail,
+  AddressListItem,
+  Country,
+  PagedResult,
+} from './addresses.models'
+import { debouncedSignal, send, withoutEmpty } from '../shared/helpers'
 
 export type PanelMode = 'closed' | 'view' | 'edit' | 'new'
 
@@ -46,19 +52,27 @@ export class AddressStore {
     return {
       url: Url,
       params: withoutEmpty({
-        street, location, countries,
-        sortCol: sort.active, desc: sort.direction === 'desc',
-        page: index + 1, pageSize: size,
+        street,
+        location,
+        countries,
+        sortCol: sort.active,
+        desc: sort.direction === 'desc',
+        page: index + 1,
+        pageSize: size,
       }),
     }
   })
   // value() throws while a resource is in error state, hence the hasValue() checks.
-  readonly items = computed(() => this.addresses.hasValue() ? this.addresses.value().items : [])
-  readonly total = computed(() => this.addresses.hasValue() ? this.addresses.value().total : 0)
-  readonly totalCapped = computed(() => this.addresses.hasValue() && this.addresses.value().totalCapped)
+  readonly items = computed(() => (this.addresses.hasValue() ? this.addresses.value().items : []))
+  readonly total = computed(() => (this.addresses.hasValue() ? this.addresses.value().total : 0))
+  readonly totalCapped = computed(
+    () => this.addresses.hasValue() && this.addresses.value().totalCapped,
+  )
 
   private readonly countries = httpResource<Country[]>(() => `${Url}/countries`)
-  readonly countryOptions = computed(() => this.countries.hasValue() ? this.countries.value() : [])
+  readonly countryOptions = computed(() =>
+    this.countries.hasValue() ? this.countries.value() : [],
+  )
 
   readonly mode = signal<PanelMode>('closed')
   readonly selectedId = signal<number | null>(null)
@@ -66,7 +80,7 @@ export class AddressStore {
     const id = this.selectedId()
     return id === null ? undefined : `${Url}/${id}`
   })
-  readonly selected = computed(() => this.detail.hasValue() ? this.detail.value() : undefined)
+  readonly selected = computed(() => (this.detail.hasValue() ? this.detail.value() : undefined))
   readonly busy = signal(false)
 
   select(id: number) {
@@ -79,9 +93,13 @@ export class AddressStore {
     this.mode.set('new')
   }
 
-  edit() { this.mode.set('edit') }
+  edit() {
+    this.mode.set('edit')
+  }
 
-  cancelEdit() { this.mode.set(this.selectedId() === null ? 'closed' : 'view') }
+  cancelEdit() {
+    this.mode.set(this.selectedId() === null ? 'closed' : 'view')
+  }
 
   close() {
     this.selectedId.set(null)
@@ -90,11 +108,12 @@ export class AddressStore {
 
   save(address: AddressCreate) {
     const id = this.selectedId()
-    const request = id === null
-      ? this.http.post<AddressDetail>(Url, address)
-      : this.http.put<AddressDetail>(`${Url}/${id}`, address)
+    const request =
+      id === null
+        ? this.http.post<AddressDetail>(Url, address)
+        : this.http.put<AddressDetail>(`${Url}/${id}`, address)
 
-    send(request, this.busy, saved => {
+    send(request, this.busy, (saved) => {
       this.toaster.success(id === null ? 'Address created' : 'Address saved')
       this.addresses.reload()
       this.countries.reload() // a new country may have been created
