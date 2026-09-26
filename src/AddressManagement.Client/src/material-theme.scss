@@ -7,14 +7,15 @@
 
 html {
   height: 100%;
+  color-scheme: light dark;
   @include mat.theme(
     (
-      color: (
-        primary: mat.$azure-palette,
-        tertiary: mat.$violet-palette,
+      color: (primary: mat.$violet-palette, tertiary: mat.$orange-palette),
+      typography: (
+        plain-family: ('JetBrains Mono', monospace),
+        brand-family: monospace,
       ),
-      typography: Roboto,
-      density: 0,
+      density: -1,
     )
   );
 

@@ -2,10 +2,8 @@ import {computed, inject, Injectable, linkedSignal, signal} from '@angular/core'
 import {HttpClient, httpResource} from '@angular/common/http';
 import {Sort} from '@angular/material/sort';
 import {Toaster} from '../shared/toaster';
-import {debouncedSignal} from '../shared/debounced-signal';
-import {withoutEmpty} from '../shared/http-params';
-import {send} from '../shared/send';
 import {AddressCreate, AddressDetail, AddressListItem, Country, PagedResult} from './addresses.models';
+import {debouncedSignal, send, withoutEmpty} from '../shared/helpers';
 
 export type PanelMode = 'closed' | 'view' | 'edit' | 'new'
 

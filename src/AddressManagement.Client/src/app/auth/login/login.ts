@@ -6,7 +6,7 @@ import {Auth, GoogleClientId} from '../auth';
   host: { class: 'flex flex-1 items-center justify-center p-4' },
   template: `
     <div class="flex flex-col items-center gap-6 rounded-2xl bg-(--mat-sys-surface-container) p-10">
-      <h1 class="text-2xl font-medium">Sign in to Addresso</h1>
+      <h1 class="text-2xl font-medium tracking-tight">Sign in to Addresso</h1>
       <div #googleButton></div>
     </div>
   `,
