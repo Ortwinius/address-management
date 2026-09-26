@@ -33,6 +33,7 @@ public class AddressConfiguration : IEntityTypeConfiguration<Address>
             .OnDelete(DeleteBehavior.Restrict);
         b.HasIndex(a => a.Street)
             .HasMethod("gin").HasOperators("gin_trgm_ops"); /* for efficient string pattern matching */
+        b.HasIndex(a => new { a.Street, a.Id }); /* B-tree for the default ORDER BY Street, Id (GIN can't sort) */
     }
 }
 
@@ -64,5 +65,6 @@ public class RecipientConfiguration : IEntityTypeConfiguration<Recipient>
     {
         b.Property(r => r.Name).HasMaxLength(200);
         b.HasIndex(r => r.Name).IsUnique();
+        // b.HasIndex(r => new {r.Name, r.Id}).IsUnique(); DOESNT WORK
     }
 }

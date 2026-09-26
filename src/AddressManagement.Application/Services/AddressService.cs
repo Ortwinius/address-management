@@ -4,6 +4,8 @@ using AddressManagement.Domain;
 
 using Microsoft.Extensions.Logging;
 
+using static AddressManagement.Application.Mappers.AddressMapper;
+
 namespace AddressManagement.Application.Services;
 
 public class AddressService(
@@ -38,7 +40,7 @@ public class AddressService(
         await addressRepository.Add(address, ct);
 
         logger.LogInformation("Created address {AddressId}", address.Id);
-        return AddressMapper.ToDetail(address);
+        return ToDetail(address);
     }
 
     public async Task<AddressDetailDto?> Update(int id, AddressCreateDto dto, CancellationToken ct)
@@ -58,7 +60,7 @@ public class AddressService(
         await addressRepository.Update(address, ct);
 
         logger.LogInformation("Updated address {AddressId}", address.Id);
-        return AddressMapper.ToDetail(address);
+        return ToDetail(address);
     }
 
     public async Task<bool> Delete(int id, CancellationToken ct)

@@ -37,7 +37,11 @@ public sealed record AddressQueryDto(
     bool Desc = false,
     int Page = 1,
     int PageSize = 10
-);
+)
+{
+    // Upper bound for counting and paging, so neither has to walk millions of rows.
+    public const int MaxResults = 100_000;
+}
 
-public sealed record PagedResult<T>(List<T> Items, int Total, int Page, int PageSize);
+public sealed record PagedResult<T>(List<T> Items, int Total, bool TotalCapped, int Page, int PageSize);
 

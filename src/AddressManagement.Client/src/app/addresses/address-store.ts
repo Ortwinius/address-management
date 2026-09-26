@@ -13,13 +13,10 @@ type Page = { index: number; size: number }
 const Url = '/api/addresses'
 const DebounceTimeInMs = 300
 
-// State and requests of the address feature. Components render it and call its methods.
 @Injectable()
 export class AddressStore {
   private readonly http = inject(HttpClient)
   private readonly toaster = inject(Toaster)
-
-  // --- List: filters, sorting and paging end up in one request ---
 
   readonly streetInput = signal('')
   readonly locationInput = signal('')
@@ -58,11 +55,10 @@ export class AddressStore {
   // value() throws while a resource is in error state, hence the hasValue() checks.
   readonly items = computed(() => this.addresses.hasValue() ? this.addresses.value().items : [])
   readonly total = computed(() => this.addresses.hasValue() ? this.addresses.value().total : 0)
+  readonly totalCapped = computed(() => this.addresses.hasValue() && this.addresses.value().totalCapped)
 
   private readonly countries = httpResource<Country[]>(() => `${Url}/countries`)
   readonly countryOptions = computed(() => this.countries.hasValue() ? this.countries.value() : [])
-
-  // --- Side panel: the selected address and what the panel shows ---
 
   readonly mode = signal<PanelMode>('closed')
   readonly selectedId = signal<number | null>(null)

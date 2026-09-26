@@ -8,7 +8,11 @@ public class AddressQueryDtoValidator : AbstractValidator<AddressQueryDto>
 {
     public AddressQueryDtoValidator()
     {
-        RuleFor(x => x.PageSize).LessThan(100);
+        RuleFor(x => x.Page).GreaterThan(0);
+        RuleFor(x => x.PageSize).GreaterThan(0).LessThan(100);
+        RuleFor(x => x.Page)
+            .Must((query, page) => (long)page * query.PageSize <= AddressQueryDto.MaxResults)
+            .WithMessage($"Only the first {AddressQueryDto.MaxResults} results can be paged. Narrow the filter instead.");
         RuleFor(x => x.Countries!.Length).LessThan(300).When(x => x.Countries is not null);
     }
 }

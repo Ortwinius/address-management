@@ -27,6 +27,7 @@ export type Country = {
 export type PagedResult<T> = {
   items: T[];
   total: number;
+  totalCapped: boolean; // true when there are more matches than the API counts
   pageSize: number;
   page: number;
 }

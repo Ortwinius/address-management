@@ -32,7 +32,7 @@
       Delete selected
     </button>
   } @else {
-    <span class="text-(--mat-sys-on-surface-variant)">{{ store.total() | number }} addresses</span>
+    <span class="text-(--mat-sys-on-surface-variant)">{{ store.total() | number }}{{ store.totalCapped() ? '+' : '' }} addresses</span>
   }
 </div>
 

@@ -1,5 +1,3 @@
-using System.Linq.Expressions;
-
 using AddressManagement.Application;
 using AddressManagement.Application.Dtos;
 using AddressManagement.Application.Mappers;
@@ -14,41 +12,23 @@ public class AddressRepository(AddressDbContext dbContext) : IAddressRepository
 {
     public async Task<PagedResult<AddressListDto>> GetAll(AddressQueryDto queryDto, CancellationToken ct)
     {
-        var addresses = dbContext.Addresses.AsNoTracking();
+        var addresses = dbContext.Addresses.AsNoTracking().Filter(queryDto);
 
-        if (!string.IsNullOrWhiteSpace(queryDto.Street))
-        {
-            addresses = addresses.Where(a => EF.Functions.ILike(a.Street, $"%{queryDto.Street}%"));
-        }
+        // Counting millions of rows is expensive, so stop at MaxResults (+1 tells whether there are more).
+        var counted = await addresses.Take(AddressQueryDto.MaxResults + 1).CountAsync(ct);
 
-        if (!string.IsNullOrWhiteSpace(queryDto.Location))
-        {
-            addresses = addresses.Where(a => EF.Functions.ILike(a.Location.Name, $"%{queryDto.Location}%"));
-        }
-
-        if (queryDto.Countries?.Length > 0)
-        {
-            addresses = addresses.Where(a => queryDto.Countries.Contains(a.Location.Country.Name));
-        }
-
-        Expression<Func<Address, string>> key = queryDto.SortCol switch
-        {
-            "zipCode" => a => a.Location.ZipCode,
-            "location" => a => a.Location.Name,
-            "country" => a => a.Location.Country.Name,
-            "recipient" => a => a.Recipient.Name,
-            _ => a => a.Street
-        };
-        
-        var total = await addresses.CountAsync(ct);
-        var orderedByCol = (queryDto.Desc ? addresses.OrderByDescending(key) : addresses.OrderBy(key)).ThenBy(a => a.Id);
-        var items = await orderedByCol
+        var items = await addresses.Sort(queryDto)
             .Skip((queryDto.Page - 1) * queryDto.PageSize)
             .Take(queryDto.PageSize)
             .Select(AddressMapper.ToListItem)
             .ToListAsync(ct);
 
-        return new PagedResult<AddressListDto>(items, total, queryDto.Page, queryDto.PageSize);
+        return new PagedResult<AddressListDto>(
+            Items: items,
+            Total: Math.Min(counted, AddressQueryDto.MaxResults),
+            TotalCapped: counted > AddressQueryDto.MaxResults,
+            Page: queryDto.Page,
+            PageSize: queryDto.PageSize);
     }
 
     public Task<Address?> GetById(int id, CancellationToken ct) =>

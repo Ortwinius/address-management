@@ -12,13 +12,20 @@ namespace AddressManagement.Api.Controllers;
 [Produces("application/json")]
 public class AddressController(
     IAddressService addressService,
-    IValidator<AddressCreateDto> validator
+    IValidator<AddressCreateDto> validator,
+    IValidator<AddressQueryDto> queryValidator
     ) : ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<PagedResult<AddressListDto>>> GetAll(
         [FromQuery] AddressQueryDto queryDto, CancellationToken ct = default)
     {
+        var validation = await queryValidator.ValidateAsync(queryDto, ct);
+        if (!validation.IsValid)
+        {
+            return ValidationProblem(new ValidationProblemDetails(validation.ToDictionary()));
+        }
+
         var addresses = await addressService.GetAll(queryDto, ct);
         return Ok(addresses);
     }
