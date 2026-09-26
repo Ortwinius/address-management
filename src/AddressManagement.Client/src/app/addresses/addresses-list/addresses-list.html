@@ -109,8 +109,8 @@
 
 <mat-paginator
   [length]="store.total()"
-  [pageIndex]="store.page().index"
-  [pageSize]="store.page().size"
+  [pageIndex]="store.pageIndex()"
+  [pageSize]="store.pageSize()"
   [pageSizeOptions]="[10, 25, 50]"
-  (page)="store.page.set({ index: $event.pageIndex, size: $event.pageSize })"
+  (page)="store.pageIndex.set($event.pageIndex); store.pageSize.set($event.pageSize)"
 />

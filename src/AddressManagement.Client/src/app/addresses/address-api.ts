@@ -1,19 +1,8 @@
 import { HttpClient, httpResource } from '@angular/common/http'
 import { inject, Injectable } from '@angular/core'
-import { AddressCreate, AddressDetail, AddressPage, Country } from './addresses.models'
+import { AddressCreate, AddressDetail, AddressPage, AddressQuery, Country } from './addresses.models'
 
 const Url = '/api/addresses'
-
-// Note: could be auto generated too, but its hidden in openapi in the query params bc openApi flattened the [FromQuery] params
-export type AddressQuery = {
-  street: string
-  location: string
-  countries: string[]
-  sortCol: string
-  desc: boolean
-  page: number
-  pageSize: number
-}
 
 @Injectable({ providedIn: 'root' })
 export class AddressApi {

@@ -9,7 +9,20 @@ export type AddressCreate = Schemas['AddressCreateDto']
 export type AddressPage = Schemas['PagedResultOfAddressListDto']
 export type Country = Schemas['CountryDto']
 
-// One place for field labels, shared by table, detail view and form.
+export type AddressFilter = {
+  street: string;
+  location: string;
+  countries: string[];
+}
+
+// Note: could be auto generated too, but its hidden in openapi in the query params bc openApi flattened the [FromQuery] params
+export type AddressQuery = AddressFilter & {
+  sortCol: string
+  desc: boolean
+  page: number
+  pageSize: number
+}
+
 export const AddressLabels = {
   street: 'Street',
   zipCode: 'Zip code',

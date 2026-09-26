@@ -4,13 +4,9 @@ import { Sort } from '@angular/material/sort'
 import { finalize, Observable } from 'rxjs'
 import { Toaster } from '../shared/toaster'
 import { AddressApi } from './address-api'
-import { AddressCreate } from './addresses.models'
+import {AddressCreate, AddressFilter} from './addresses.models'
 
 export type PanelMode = 'closed' | 'view' | 'edit' | 'new'
-
-type Filter = { street: string; location: string; countries: string[] }
-type Query = Filter & { sort: Sort }
-type Page = { index: number; size: number }
 
 const DebounceTimeInMs = 300
 
@@ -20,33 +16,27 @@ export class AddressStore {
   private readonly toaster = inject(Toaster)
 
   // Bound to the filter inputs with [formField]. Free text is debounced, so typing does not fire a request per key.
-  private readonly filter = signal<Filter>({ street: '', location: '', countries: [] })
+  private readonly filter = signal<AddressFilter>({ street: '', location: '', countries: [] })
   readonly filterForm = form(this.filter, (p) => {
     debounce(p.street, DebounceTimeInMs)
     debounce(p.location, DebounceTimeInMs)
   })
   readonly sort = signal<Sort>({ active: 'street', direction: 'asc' })
-  private readonly query = computed<Query>(() => ({ ...this.filter(), sort: this.sort() }))
 
-  // Any filter or sort change jumps back to the first page, the page size is kept.
-  readonly page = linkedSignal<Query, Page>({
-    source: this.query,
-    computation: (_, previous) => ({ index: 0, size: previous?.value.size ?? 10 }),
+  readonly pageSize = signal(10)
+  // Any filter or sort change jumps back to the first page.
+  readonly pageIndex = linkedSignal({
+    source: () => ({ filter: this.filter(), sort: this.sort() }),
+    computation: () => 0,
   })
 
-  readonly addresses = this.api.list(() => {
-    const { street, location, countries, sort } = this.query()
-    const { index, size } = this.page()
-    return {
-      street: street,
-      location: location,
-      countries: countries,
-      sortCol: sort.active,
-      desc: sort.direction === 'desc',
-      page: index + 1,
-      pageSize: size,
-    }
-  })
+  readonly addresses = this.api.list(() => ({
+    ...this.filter(),
+    sortCol: this.sort().active,
+    desc: this.sort().direction === 'desc',
+    page: this.pageIndex() + 1,
+    pageSize: this.pageSize(),
+  }))
 
   readonly items = computed(() => (this.addresses.hasValue() ? this.addresses.value().items : []))
   readonly total = computed(() => (this.addresses.hasValue() ? this.addresses.value().total : 0))
