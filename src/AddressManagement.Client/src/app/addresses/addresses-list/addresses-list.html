@@ -1,29 +1,17 @@
 <div class="flex flex-wrap items-center gap-2 p-4">
   <mat-form-field class="grow basis-48" subscriptSizing="dynamic">
     <mat-label>Street</mat-label>
-    <input
-      matInput
-      [value]="store.streetInput()"
-      (input)="store.streetInput.set($any($event.target).value)"
-    />
+    <input matInput [formField]="store.filterForm.street" />
   </mat-form-field>
 
   <mat-form-field class="grow basis-48" subscriptSizing="dynamic">
     <mat-label>Location</mat-label>
-    <input
-      matInput
-      [value]="store.locationInput()"
-      (input)="store.locationInput.set($any($event.target).value)"
-    />
+    <input matInput [formField]="store.filterForm.location" />
   </mat-form-field>
 
   <mat-form-field class="grow basis-48" subscriptSizing="dynamic">
     <mat-label>Country</mat-label>
-    <mat-select
-      multiple
-      [value]="store.countriesInput()"
-      (selectionChange)="store.countriesInput.set($event.value)"
-    >
+    <mat-select multiple [formField]="store.filterForm.countries">
       @for (c of store.countryOptions(); track c.name) {
         <mat-option [value]="c.name">{{ c.name }}</mat-option>
       }
@@ -49,7 +37,7 @@
     </button>
   } @else {
     <span class="text-(--mat-sys-on-surface-variant)"
-      >{{ store.total() | number }}{{ store.totalCapped() ? '+' : '' }} addresses</span
+      >{{ store.total() | number }}{{ store.totalCapped() ? '+' : '' }} {{store.total() === 1 ? 'address' : 'addresses'}}</span
     >
   }
 </div>

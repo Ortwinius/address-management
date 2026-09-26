@@ -25,6 +25,7 @@ import {
 } from '@angular/material/table'
 import { SelectionModel } from '@angular/cdk/collections'
 import { MatCheckbox } from '@angular/material/checkbox'
+import {FormField} from '@angular/forms/signals';
 
 const AllColumns: AddressField[] = ['street', 'zipCode', 'location', 'country', 'recipient']
 const CompactColumns: AddressField[] = ['street', 'location', 'country']
@@ -56,6 +57,7 @@ const CompactColumns: AddressField[] = ['street', 'location', 'country']
     MatCellDef,
     MatRowDef,
     MatCheckbox,
+    FormField,
   ],
   selector: 'app-addresses-list',
   styleUrl: './addresses-list.css',

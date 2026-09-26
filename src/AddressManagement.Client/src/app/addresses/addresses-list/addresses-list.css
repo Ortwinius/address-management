@@ -16,6 +16,7 @@
   background-color: var(--mat-sys-secondary-container);
 }
 
-button.new-address-btn {
-  height: 52px !important;
+.new-address-btn {
+  --mat-button-filled-container-height: 52px;
+  --mat-button-filled-container-shape: 6px;
 }

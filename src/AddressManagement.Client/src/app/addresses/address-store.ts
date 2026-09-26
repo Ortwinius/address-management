@@ -1,85 +1,67 @@
 import { computed, inject, Injectable, linkedSignal, signal } from '@angular/core'
-import { HttpClient, httpResource } from '@angular/common/http'
+import { debounce, form } from '@angular/forms/signals'
 import { Sort } from '@angular/material/sort'
+import { finalize, Observable } from 'rxjs'
 import { Toaster } from '../shared/toaster'
-import {
-  AddressCreate,
-  AddressDetail,
-  AddressListItem,
-  Country,
-  PagedResult,
-} from './addresses.models'
-import { debouncedSignal, send, withoutEmpty } from '../shared/helpers'
+import { AddressApi } from './address-api'
+import { AddressCreate } from './addresses.models'
 
 export type PanelMode = 'closed' | 'view' | 'edit' | 'new'
 
-type Filter = { street: string; location: string; countries: string[]; sort: Sort }
+type Filter = { street: string; location: string; countries: string[] }
+type Query = Filter & { sort: Sort }
 type Page = { index: number; size: number }
 
-const Url = '/api/addresses'
 const DebounceTimeInMs = 300
 
 @Injectable()
 export class AddressStore {
-  private readonly http = inject(HttpClient)
+  private readonly api = inject(AddressApi)
   private readonly toaster = inject(Toaster)
 
-  readonly streetInput = signal('')
-  readonly locationInput = signal('')
-  readonly countriesInput = signal<string[]>([])
+  // Bound to the filter inputs with [formField]. Free text is debounced, so typing does not fire a request per key.
+  private readonly filter = signal<Filter>({ street: '', location: '', countries: [] })
+  readonly filterForm = form(this.filter, (p) => {
+    debounce(p.street, DebounceTimeInMs)
+    debounce(p.location, DebounceTimeInMs)
+  })
   readonly sort = signal<Sort>({ active: 'street', direction: 'asc' })
-
-  // Only free text is debounced, so typing does not fire a request per key.
-  private readonly street = debouncedSignal(this.streetInput, DebounceTimeInMs)
-  private readonly location = debouncedSignal(this.locationInput, DebounceTimeInMs)
-
-  private readonly filter = computed<Filter>(() => ({
-    street: this.street(),
-    location: this.location(),
-    countries: this.countriesInput(),
-    sort: this.sort(),
-  }))
+  private readonly query = computed<Query>(() => ({ ...this.filter(), sort: this.sort() }))
 
   // Any filter or sort change jumps back to the first page, the page size is kept.
-  readonly page = linkedSignal<Filter, Page>({
-    source: this.filter,
+  readonly page = linkedSignal<Query, Page>({
+    source: this.query,
     computation: (_, previous) => ({ index: 0, size: previous?.value.size ?? 10 }),
   })
 
-  readonly addresses = httpResource<PagedResult<AddressListItem>>(() => {
-    const { street, location, countries, sort } = this.filter()
+  readonly addresses = this.api.list(() => {
+    const { street, location, countries, sort } = this.query()
     const { index, size } = this.page()
     return {
-      url: Url,
-      params: withoutEmpty({
-        street,
-        location,
-        countries,
-        sortCol: sort.active,
-        desc: sort.direction === 'desc',
-        page: index + 1,
-        pageSize: size,
-      }),
+      street: street,
+      location: location,
+      countries: countries,
+      sortCol: sort.active,
+      desc: sort.direction === 'desc',
+      page: index + 1,
+      pageSize: size,
     }
   })
-  // value() throws while a resource is in error state, hence the hasValue() checks.
+
   readonly items = computed(() => (this.addresses.hasValue() ? this.addresses.value().items : []))
   readonly total = computed(() => (this.addresses.hasValue() ? this.addresses.value().total : 0))
   readonly totalCapped = computed(
     () => this.addresses.hasValue() && this.addresses.value().totalCapped,
   )
 
-  private readonly countries = httpResource<Country[]>(() => `${Url}/countries`)
+  private readonly countries = this.api.countries()
   readonly countryOptions = computed(() =>
     this.countries.hasValue() ? this.countries.value() : [],
   )
 
   readonly mode = signal<PanelMode>('closed')
   readonly selectedId = signal<number | null>(null)
-  readonly detail = httpResource<AddressDetail>(() => {
-    const id = this.selectedId()
-    return id === null ? undefined : `${Url}/${id}`
-  })
+  readonly detail = this.api.detail(this.selectedId)
   readonly selected = computed(() => (this.detail.hasValue() ? this.detail.value() : undefined))
   readonly busy = signal(false)
 
@@ -108,12 +90,9 @@ export class AddressStore {
 
   save(address: AddressCreate) {
     const id = this.selectedId()
-    const request =
-      id === null
-        ? this.http.post<AddressDetail>(Url, address)
-        : this.http.put<AddressDetail>(`${Url}/${id}`, address)
+    const request = id === null ? this.api.create(address) : this.api.update(id, address)
 
-    send(request, this.busy, (saved) => {
+    this.run(request, (saved) => {
       this.toaster.success(id === null ? 'Address created' : 'Address saved')
       this.addresses.reload()
       this.countries.reload() // a new country may have been created
@@ -127,7 +106,7 @@ export class AddressStore {
     const id = this.selectedId()
     if (id === null) return
 
-    send(this.http.delete(`${Url}/${id}`), this.busy, () => {
+    this.run(this.api.delete(id), () => {
       this.toaster.success('Address deleted')
       this.addresses.reload()
       this.close()
@@ -135,11 +114,18 @@ export class AddressStore {
   }
 
   removeMany(ids: number[]) {
-    send(this.http.delete(Url, { params: { ids } }), this.busy, () => {
+    this.run(this.api.deleteMany(ids), () => {
       this.toaster.success(`${ids.length} addresses deleted`)
       this.addresses.reload()
       const open = this.selectedId()
       if (open !== null && ids.includes(open)) this.close()
     })
+  }
+
+  private run<T>(request: Observable<T>, onSuccess: (response: T) => void) {
+    this.busy.set(true)
+    request
+      .pipe(finalize(() => this.busy.set(false)))
+      .subscribe({ next: onSuccess, error: () => {} })
   }
 }

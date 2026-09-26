@@ -1,3 +1,6 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
+
 using AddressManagement.Application;
 using AddressManagement.Application.Repositories;
 using AddressManagement.Application.Services;
@@ -14,6 +17,13 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
+
+// configuring for the auto-generation of the TS types from OpenAPI config
+builder.Services.ConfigureHttpJsonOptions(o =>
+{
+    o.SerializerOptions.NumberHandling = JsonNumberHandling.Strict;
+    o.SerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
+});
 
 var connString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<AddressDbContext>(options =>
