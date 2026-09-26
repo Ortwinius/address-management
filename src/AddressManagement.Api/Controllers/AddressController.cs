@@ -1,6 +1,5 @@
 using AddressManagement.Application.Dtos;
 using AddressManagement.Application.Services;
-using AddressManagement.Domain;
 
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
@@ -47,7 +46,7 @@ public class AddressController(
         }
 
         var created = await addressService.Add(addressDto, ct);
-        return StatusCode(StatusCodes.Status201Created, created);
+        return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }
 
     [HttpPut("{id:int}")]
@@ -67,7 +66,7 @@ public class AddressController(
     public async Task<ActionResult> Delete(int id, CancellationToken ct = default)
     {
         var deleted = await addressService.Delete(id, ct);
-        return deleted ? Ok() : NotFound();
+        return deleted ? NoContent() : NotFound();
     }
     
     [HttpDelete]
@@ -75,11 +74,5 @@ public class AddressController(
     {
         await addressService.DeleteMany(ids, ct);
         return NoContent();
-    }
-
-    [HttpGet("countries")]
-    public async Task<IEnumerable<CountryDto>> GetCountries(CancellationToken ct)
-    {
-        return await addressService.GetCountries(ct);
     }
 }

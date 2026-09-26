@@ -1,6 +1,6 @@
 namespace AddressManagement.Application.Validators;
 
-public class FieldLimits
+public static class FieldLimits
 {
-    public static int Text = 200;
+    public const int Text = 200;
 }

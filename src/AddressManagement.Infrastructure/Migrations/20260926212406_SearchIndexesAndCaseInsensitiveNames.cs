@@ -5,15 +5,25 @@
 namespace AddressManagement.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class AddedIndexes : Migration
+    public partial class SearchIndexesAndCaseInsensitiveNames : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropIndex(
-                name: "IX_Recipients_Name_Id",
+            migrationBuilder.AlterDatabase()
+                .Annotation("Npgsql:PostgresExtension:citext", ",,")
+                .Annotation("Npgsql:PostgresExtension:pg_trgm", ",,")
+                .OldAnnotation("Npgsql:PostgresExtension:pg_trgm", ",,");
+
+            migrationBuilder.AlterColumn<string>(
+                name: "Name",
                 schema: "addresses",
-                table: "Recipients");
+                table: "Recipients",
+                type: "citext",
+                nullable: false,
+                oldClrType: typeof(string),
+                oldType: "character varying(200)",
+                oldMaxLength: 200);
 
             migrationBuilder.AlterColumn<string>(
                 name: "ZipCode",
@@ -30,8 +40,7 @@ namespace AddressManagement.Infrastructure.Migrations
                 name: "Name",
                 schema: "addresses",
                 table: "Locations",
-                type: "character varying(200)",
-                maxLength: 200,
+                type: "citext",
                 nullable: false,
                 oldClrType: typeof(string),
                 oldType: "character varying(100)",
@@ -41,8 +50,7 @@ namespace AddressManagement.Infrastructure.Migrations
                 name: "Name",
                 schema: "addresses",
                 table: "Countries",
-                type: "character varying(200)",
-                maxLength: 200,
+                type: "citext",
                 nullable: false,
                 oldClrType: typeof(string),
                 oldType: "character varying(100)",
@@ -52,15 +60,19 @@ namespace AddressManagement.Infrastructure.Migrations
                 name: "IX_Locations_Name",
                 schema: "addresses",
                 table: "Locations",
-                column: "Name",
-                unique: true);
+                column: "Name");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Locations_ZipCode",
                 schema: "addresses",
                 table: "Locations",
-                column: "ZipCode",
-                unique: true);
+                column: "ZipCode");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Addresses_Street_Id",
+                schema: "addresses",
+                table: "Addresses",
+                columns: new[] { "Street", "Id" });
         }
 
         /// <inheritdoc />
@@ -75,6 +87,26 @@ namespace AddressManagement.Infrastructure.Migrations
                 name: "IX_Locations_ZipCode",
                 schema: "addresses",
                 table: "Locations");
+
+            migrationBuilder.DropIndex(
+                name: "IX_Addresses_Street_Id",
+                schema: "addresses",
+                table: "Addresses");
+
+            migrationBuilder.AlterDatabase()
+                .Annotation("Npgsql:PostgresExtension:pg_trgm", ",,")
+                .OldAnnotation("Npgsql:PostgresExtension:citext", ",,")
+                .OldAnnotation("Npgsql:PostgresExtension:pg_trgm", ",,");
+
+            migrationBuilder.AlterColumn<string>(
+                name: "Name",
+                schema: "addresses",
+                table: "Recipients",
+                type: "character varying(200)",
+                maxLength: 200,
+                nullable: false,
+                oldClrType: typeof(string),
+                oldType: "citext");
 
             migrationBuilder.AlterColumn<string>(
                 name: "ZipCode",
@@ -95,8 +127,7 @@ namespace AddressManagement.Infrastructure.Migrations
                 maxLength: 100,
                 nullable: false,
                 oldClrType: typeof(string),
-                oldType: "character varying(200)",
-                oldMaxLength: 200);
+                oldType: "citext");
 
             migrationBuilder.AlterColumn<string>(
                 name: "Name",
@@ -106,15 +137,7 @@ namespace AddressManagement.Infrastructure.Migrations
                 maxLength: 100,
                 nullable: false,
                 oldClrType: typeof(string),
-                oldType: "character varying(200)",
-                oldMaxLength: 200);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Recipients_Name_Id",
-                schema: "addresses",
-                table: "Recipients",
-                columns: new[] { "Name", "Id" },
-                unique: true);
+                oldType: "citext");
         }
     }
 }

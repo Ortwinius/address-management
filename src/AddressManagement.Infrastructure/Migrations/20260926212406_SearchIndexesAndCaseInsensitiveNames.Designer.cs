@@ -11,8 +11,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AddressManagement.Infrastructure.Migrations
 {
     [DbContext(typeof(AddressDbContext))]
-    [Migration("20260926165750_AddedIndexes")]
-    partial class AddedIndexes
+    [Migration("20260926212406_SearchIndexesAndCaseInsensitiveNames")]
+    partial class SearchIndexesAndCaseInsensitiveNames
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -23,6 +23,7 @@ namespace AddressManagement.Infrastructure.Migrations
                 .HasAnnotation("ProductVersion", "10.0.12")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
+            NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "citext");
             NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "pg_trgm");
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
@@ -74,8 +75,7 @@ namespace AddressManagement.Infrastructure.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
+                        .HasColumnType("citext");
 
                     b.HasKey("Id");
 
@@ -98,8 +98,7 @@ namespace AddressManagement.Infrastructure.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
+                        .HasColumnType("citext");
 
                     b.Property<string>("ZipCode")
                         .IsRequired()
@@ -108,11 +107,9 @@ namespace AddressManagement.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Name")
-                        .IsUnique();
+                    b.HasIndex("Name");
 
-                    b.HasIndex("ZipCode")
-                        .IsUnique();
+                    b.HasIndex("ZipCode");
 
                     b.HasIndex("CountryId", "ZipCode", "Name")
                         .IsUnique();
@@ -130,8 +127,7 @@ namespace AddressManagement.Infrastructure.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
+                        .HasColumnType("citext");
 
                     b.HasKey("Id");
 

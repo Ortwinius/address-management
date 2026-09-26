@@ -1,4 +1,5 @@
 using AddressManagement.Application;
+using AddressManagement.Application.Repositories;
 using AddressManagement.Application.Services;
 using AddressManagement.Application.Validators;
 using AddressManagement.Infrastructure.Persistence;
@@ -19,8 +20,13 @@ builder.Services.AddDbContext<AddressDbContext>(options =>
     options.UseNpgsql(connString));
 
 builder.Services.AddScoped<IAddressRepository, AddressRepository>();
+builder.Services.AddScoped<ICountryRepository, CountryRepository>();
+builder.Services.AddScoped<ILocationRepository, LocationRepository>();
+builder.Services.AddScoped<IRecipientRepository, RecipientRepository>();
 
 builder.Services.AddScoped<IAddressService, AddressService>();
+builder.Services.AddScoped<ICountryService, CountryService>();
+
 builder.Services.AddValidatorsFromAssemblyContaining<AddressCreateDtoValidator>();
 
 // Google Sign-In: the client sends Google's ID token as bearer token, validated against Google's public keys.

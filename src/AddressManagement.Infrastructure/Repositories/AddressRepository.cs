@@ -1,6 +1,7 @@
 using AddressManagement.Application;
 using AddressManagement.Application.Dtos;
 using AddressManagement.Application.Mappers;
+using AddressManagement.Application.Repositories;
 using AddressManagement.Domain;
 using AddressManagement.Infrastructure.Persistence;
 

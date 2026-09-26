@@ -1,17 +1,19 @@
 using AddressManagement.Application.Dtos;
 using AddressManagement.Application.Exceptions;
 using AddressManagement.Application.Mappers;
+using AddressManagement.Application.Repositories;
 using AddressManagement.Domain;
 
 using Microsoft.Extensions.Logging;
-
-using static AddressManagement.Application.Mappers.AddressMapper;
 
 namespace AddressManagement.Application.Services;
 
 public class AddressService(
     ILogger<AddressService> logger,
-    IAddressRepository addressRepository
+    IAddressRepository addressRepository,
+    IRecipientRepository recipientRepository,
+    ICountryRepository countryRepository,
+    ILocationRepository locationRepository
     ) : IAddressService
 {
     public async Task<PagedResult<AddressListDto>> GetAll(AddressQueryDto queryDto, CancellationToken ct)
@@ -30,6 +32,9 @@ public class AddressService(
 
     public async Task<AddressDetailDto> Add(AddressCreateDto dto, CancellationToken ct)
     {
+        dto = Trim(dto);
+        await EnsureNotDuplicate(dto, id: null, ct);
+
         var address = new Address
         {
             Street = dto.Street,
@@ -38,12 +43,10 @@ public class AddressService(
             Location = await ResolveLocation(dto, ct)
         };
 
-        await EnsureNotDuplicate(dto, id: null, ct);
-        
         await addressRepository.Add(address, ct);
 
         logger.LogInformation("Created address {AddressId}", address.Id);
-        return ToDetail(address);
+        return AddressMapper.ToDetail(address);
     }
 
     public async Task<AddressDetailDto?> Update(int id, AddressCreateDto dto, CancellationToken ct)
@@ -54,18 +57,18 @@ public class AddressService(
             return null;
         }
 
+        dto = Trim(dto);
         await EnsureNotDuplicate(dto, id: id, ct);
-        
+
         address.Street = dto.Street;
         address.Recipient = await ResolveRecipient(dto.Recipient, ct);
         address.AddressAffix = dto.AddressAffix;
-        // Re-point to a (possibly new) Location instead of editing the shared one.
         address.Location = await ResolveLocation(dto, ct);
 
         await addressRepository.Update(address, ct);
 
         logger.LogInformation("Updated address {AddressId}", address.Id);
-        return ToDetail(address);
+        return AddressMapper.ToDetail(address);
     }
 
     public async Task<bool> Delete(int id, CancellationToken ct)
@@ -82,30 +85,36 @@ public class AddressService(
 
     // Find-or-create, so one person or company is stored once and shared by its addresses.
     private async Task<Recipient> ResolveRecipient(string name, CancellationToken ct) =>
-        await addressRepository.FindRecipient(name, ct) ?? new Recipient { Name = name };
+        await recipientRepository.FindByName(name, ct) ?? new Recipient { Name = name };
+
     // Find-or-create keeps Country/Location normalized (shared by many addresses).
     private async Task<Location> ResolveLocation(AddressCreateDto dto, CancellationToken ct)
     {
-        var country = await addressRepository.FindCountry(dto.Country, ct)
+        var country = await countryRepository.FindByName(dto.Country, ct)
                       ?? new Country { Name = dto.Country };
 
         return (country.Id != 0
-                   ? await addressRepository.FindLocation(country.Id, dto.ZipCode, dto.Location, ct)
+                   ? await locationRepository.Find(country.Id, dto.ZipCode, dto.Location, ct)
                    : null)
                ?? new Location { Name = dto.Location, ZipCode = dto.ZipCode, Country = country };
-    }
-
-    public async Task<IEnumerable<CountryDto>> GetCountries(CancellationToken ct)
-    {
-        var countries = await addressRepository.GetCountries(ct);
-        return countries;
     }
 
     private async Task EnsureNotDuplicate(AddressCreateDto dto, int? id, CancellationToken ct)
     {
         if (await addressRepository.Exists(dto, id, ct))
         {
-            throw new DuplicateAddressException();
+            throw new ConflictException("Address already exists.");
         }
     }
+
+    // " Austria" must find "Austria". Upper/lower case is handled by the citext columns.
+    private static AddressCreateDto Trim(AddressCreateDto dto) => dto with
+    {
+        Street = dto.Street.Trim(),
+        ZipCode = dto.ZipCode.Trim(),
+        Location = dto.Location.Trim(),
+        Country = dto.Country.Trim(),
+        Recipient = dto.Recipient.Trim(),
+        AddressAffix = string.IsNullOrWhiteSpace(dto.AddressAffix) ? null : dto.AddressAffix.Trim()
+    };
 }

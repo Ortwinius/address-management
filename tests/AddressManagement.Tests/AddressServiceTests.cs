@@ -1,5 +1,5 @@
-using AddressManagement.Application;
 using AddressManagement.Application.Dtos;
+using AddressManagement.Application.Repositories;
 using AddressManagement.Application.Services;
 using AddressManagement.Domain;
 
@@ -17,15 +17,18 @@ public class AddressServiceTests
         var country = new Country { Id = 1, Name = "Austria" };
         var location = new Location { Id = 2, Name = "Wien", ZipCode = "1210", CountryId = 1, Country = country };
 
-        var repository = Substitute.For<IAddressRepository>();
-        repository.FindCountry("Austria", Arg.Any<CancellationToken>()).Returns(country);
-        repository.FindLocation(1, "1210", "Wien", Arg.Any<CancellationToken>()).Returns(location);
+        var addresses = Substitute.For<IAddressRepository>();
+        var countries = Substitute.For<ICountryRepository>();
+        var locations = Substitute.For<ILocationRepository>();
+        countries.FindByName("Austria", Arg.Any<CancellationToken>()).Returns(country);
+        locations.Find(1, "1210", "Wien", Arg.Any<CancellationToken>()).Returns(location);
 
-        var service = new AddressService(NullLogger<AddressService>.Instance, repository);
+        var service = new AddressService(NullLogger<AddressService>.Instance,
+            addresses, Substitute.For<IRecipientRepository>(), countries, locations);
 
         await service.Add(new AddressCreateDto("Teststraße 1", "1210", "Wien", "Austria", "Max Mustermann", null), CancellationToken.None);
 
-        await repository.Received(1).Add(
+        await addresses.Received(1).Add(
             Arg.Is<Address>(a => a.Location == location && a.Location.Country == country),
             Arg.Any<CancellationToken>());
     }

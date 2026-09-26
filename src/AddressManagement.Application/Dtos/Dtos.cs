@@ -29,11 +29,13 @@ public sealed record AddressCreateDto(
 
 public sealed record CountryDto(string Name);
 
+public enum AddressSortColumn{Street,ZipCode,Location,Country,Recipient}
+
 public sealed record AddressQueryDto(
     string? Street,
     string? Location,
     string[]? Countries,
-    string SortCol = "Street",
+    AddressSortColumn SortCol = AddressSortColumn.Street,
     bool Desc = false,
     int Page = 1,
     int PageSize = 10

@@ -33,10 +33,10 @@ internal static class AddressQueryExtensions
     {
         Expression<Func<Address, string>> key = query.SortCol switch
         {
-            "zipCode" => a => a.Location.ZipCode,
-            "location" => a => a.Location.Name,
-            "country" => a => a.Location.Country.Name,
-            "recipient" => a => a.Recipient.Name,
+            AddressSortColumn.ZipCode => a => a.Location.ZipCode,
+            AddressSortColumn.Location => a => a.Location.Name,
+            AddressSortColumn.Country => a => a.Location.Country.Name,
+            AddressSortColumn.Recipient => a => a.Recipient.Name,
             _ => a => a.Street
         };
 
