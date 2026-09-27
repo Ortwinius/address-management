@@ -8,10 +8,14 @@ public class AddressCreateDtoValidator : AbstractValidator<AddressCreateDto>
 {
     public AddressCreateDtoValidator()
     {
-        RuleFor(x => x.Street).NotEmpty().MinimumLength(1);
-        RuleFor(x => x.ZipCode).NotEmpty();
-        RuleFor(x => x.Location).NotEmpty();
-        RuleFor(x => x.Country).NotEmpty();
-        RuleFor(x => x.Recipient).NotEmpty();
+        RuleLevelCascadeMode = CascadeMode.Stop;
+
+        RuleFor(x => x.Street).NotEmpty().MaximumLength(FieldLimits.Text);
+        RuleFor(x => x.ZipCode).NotEmpty().MaximumLength(FieldLimits.Text)
+            .Must(zip => zip.All(char.IsAsciiDigit)).WithMessage("'{PropertyName}' may only contain digits.");
+        RuleFor(x => x.Location).NotEmpty().MaximumLength(FieldLimits.Text);
+        RuleFor(x => x.Country).NotEmpty().MaximumLength(FieldLimits.Text);
+        RuleFor(x => x.Recipient).NotEmpty().MaximumLength(FieldLimits.Text);
+        RuleFor(x => x.AddressAffix).MaximumLength(FieldLimits.Text);
     }
 }

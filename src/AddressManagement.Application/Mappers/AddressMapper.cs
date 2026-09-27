@@ -4,6 +4,7 @@ using AddressManagement.Application.Dtos;
 using AddressManagement.Domain;
 
 namespace AddressManagement.Application.Mappers;
+
 public static class AddressMapper
 {
     public static readonly Expression<Func<Address, AddressListDto>> ToListItem =

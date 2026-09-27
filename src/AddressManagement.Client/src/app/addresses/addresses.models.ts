@@ -1,37 +1,28 @@
-export type AddressListItem = {
-  id: number;
-  street: string;
-  zipCode: string;
-  location: string;
-  country: string;
-  recipient: string;
+import type { components } from '../api/api-types'
+
+// Generated from the API's OpenAPI document (npm run api:types), so client and server can't drift apart.
+type Schemas = components['schemas']
+
+export type AddressListItem = Schemas['AddressListDto']
+export type AddressDetail = Schemas['AddressDetailDto']
+export type AddressCreate = Schemas['AddressCreateDto']
+export type AddressPage = Schemas['PagedResultOfAddressListDto']
+export type Country = Schemas['CountryDto']
+
+export type AddressFilter = {
+  street: string
+  location: string
+  countries: string[]
 }
 
-export type AddressCreate = {
-  street: string;
-  zipCode: string;
-  location: string;
-  country: string;
-  recipient: string;
-  addressAffix: string | null;
+// Note: could be auto generated too, but its hidden in openapi in the query params bc openApi flattened the [FromQuery] params
+export type AddressQuery = AddressFilter & {
+  sortCol: string
+  desc: boolean
+  page: number
+  pageSize: number
 }
 
-export type AddressDetail = {
-  id: number;
-} & AddressCreate
-
-export type Country = {
-  name: string;
-}
-
-export type PagedResult<T> = {
-  items: T[];
-  total: number;
-  pageSize: number;
-  page: number;
-}
-
-// One place for field labels, shared by table, detail view and form.
 export const AddressLabels = {
   street: 'Street',
   zipCode: 'Zip code',

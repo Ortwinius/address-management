@@ -1,8 +1,8 @@
 using AddressManagement.Application.Dtos;
 using AddressManagement.Application.Services;
-using AddressManagement.Domain;
 
 using FluentValidation;
+
 using Microsoft.AspNetCore.Mvc;
 
 namespace AddressManagement.Api.Controllers;
@@ -12,13 +12,20 @@ namespace AddressManagement.Api.Controllers;
 [Produces("application/json")]
 public class AddressController(
     IAddressService addressService,
-    IValidator<AddressCreateDto> validator
+    IValidator<AddressCreateDto> validator,
+    IValidator<AddressQueryDto> queryValidator
     ) : ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<PagedResult<AddressListDto>>> GetAll(
         [FromQuery] AddressQueryDto queryDto, CancellationToken ct = default)
     {
+        var validation = await queryValidator.ValidateAsync(queryDto, ct);
+        if (!validation.IsValid)
+        {
+            return ValidationProblem(new ValidationProblemDetails(validation.ToDictionary()));
+        }
+
         var addresses = await addressService.GetAll(queryDto, ct);
         return Ok(addresses);
     }
@@ -40,7 +47,7 @@ public class AddressController(
         }
 
         var created = await addressService.Add(addressDto, ct);
-        return StatusCode(StatusCodes.Status201Created, created);
+        return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }
 
     [HttpPut("{id:int}")]
@@ -60,19 +67,13 @@ public class AddressController(
     public async Task<ActionResult> Delete(int id, CancellationToken ct = default)
     {
         var deleted = await addressService.Delete(id, ct);
-        return deleted ? Ok() : NotFound();
+        return deleted ? NoContent() : NotFound();
     }
-    
+
     [HttpDelete]
     public async Task<ActionResult> DeleteMany([FromQuery] int[] ids, CancellationToken ct = default)
     {
         await addressService.DeleteMany(ids, ct);
         return NoContent();
-    }
-
-    [HttpGet("countries")]
-    public async Task<IEnumerable<CountryDto>> GetCountries(CancellationToken ct)
-    {
-        return await addressService.GetCountries(ct);
     }
 }

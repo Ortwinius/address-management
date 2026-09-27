@@ -1,9 +1,9 @@
-import {Component, inject} from '@angular/core';
-import {MatButton} from '@angular/material/button';
-import {MatIcon} from '@angular/material/icon';
-import {AddressFields, AddressLabels} from '../addresses.models';
-import {AddressStore} from '../address-store';
-import {Skeleton} from '../../shared/skeleton';
+import { Component, inject } from '@angular/core'
+import { MatButton } from '@angular/material/button'
+import { MatIcon } from '@angular/material/icon'
+import { AddressFields, AddressLabels } from '../addresses.models'
+import { AddressStore } from '../address-store'
+import { Skeleton } from '../../shared/skeleton'
 
 @Component({
   imports: [MatButton, MatIcon, Skeleton],

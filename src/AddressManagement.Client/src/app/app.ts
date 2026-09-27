@@ -1,9 +1,9 @@
-import { Component, inject } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
-import { MatToolbar } from '@angular/material/toolbar';
-import { MatIconButton } from '@angular/material/button';
-import { MatIcon } from '@angular/material/icon';
-import { Auth } from './auth/auth';
+import { Component, inject } from '@angular/core'
+import { RouterOutlet } from '@angular/router'
+import { MatToolbar } from '@angular/material/toolbar'
+import { MatIconButton } from '@angular/material/button'
+import { MatIcon } from '@angular/material/icon'
+import { Auth } from './auth/auth'
 
 @Component({
   imports: [RouterOutlet, MatToolbar, MatIconButton, MatIcon],

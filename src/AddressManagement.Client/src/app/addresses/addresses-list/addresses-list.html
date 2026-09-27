@@ -1,24 +1,28 @@
 <div class="flex flex-wrap items-center gap-2 p-4">
   <mat-form-field class="grow basis-48" subscriptSizing="dynamic">
     <mat-label>Street</mat-label>
-    <input matInput [value]="store.streetInput()" (input)="store.streetInput.set($any($event.target).value)"/>
+    <input matInput [formField]="store.filterForm.street" />
   </mat-form-field>
 
   <mat-form-field class="grow basis-48" subscriptSizing="dynamic">
     <mat-label>Location</mat-label>
-    <input matInput [value]="store.locationInput()" (input)="store.locationInput.set($any($event.target).value)"/>
+    <input matInput [formField]="store.filterForm.location" />
   </mat-form-field>
 
   <mat-form-field class="grow basis-48" subscriptSizing="dynamic">
     <mat-label>Country</mat-label>
-    <mat-select multiple [value]="store.countriesInput()" (selectionChange)="store.countriesInput.set($event.value)">
+    <mat-select multiple [formField]="store.filterForm.countries">
       @for (c of store.countryOptions(); track c.name) {
         <mat-option [value]="c.name">{{ c.name }}</mat-option>
       }
     </mat-select>
   </mat-form-field>
 
-  <button mat-flat-button class="ml-auto" (click)="store.create()">
+  <button
+    mat-flat-button
+    class="sm:ml-auto sm:w-xs w-xl mr-auto new-address-btn rounded-md!"
+    (click)="store.create()"
+  >
     <mat-icon>add</mat-icon>
     New address
   </button>
@@ -32,54 +36,75 @@
       Delete selected
     </button>
   } @else {
-    <span class="text-(--mat-sys-on-surface-variant)">{{ store.total() | number }} addresses</span>
+    <span class="text-(--mat-sys-on-surface-variant)"
+      >{{ store.total() | number }}{{ store.totalCapped() ? '+' : '' }}
+      {{ store.total() === 1 ? 'address' : 'addresses' }}</span
+    >
   }
 </div>
 
 <div class="h-1">
   @if (store.addresses.isLoading()) {
-    <mat-progress-bar mode="indeterminate"/>
+    <mat-progress-bar mode="indeterminate" />
   }
 </div>
 
 <div class="overflow-x-auto">
-  <table mat-table [dataSource]="store.items()"
-         matSort matSortDisableClear="false"
-         [matSortActive]="store.sort().active" [matSortDirection]="store.sort().direction"
-         (matSortChange)="store.sort.set($event)">
-
+  <table
+    mat-table
+    [dataSource]="store.items()"
+    matSort
+    matSortDisableClear="false"
+    [matSortActive]="store.sort().active"
+    [matSortDirection]="store.sort().direction"
+    (matSortChange)="store.sort.set($event)"
+  >
     <ng-container matColumnDef="select">
       <th mat-header-cell *matHeaderCellDef>
-        <mat-checkbox (change)="$event ? toggleAllRows() : null"
-                      [checked]="selection().hasValue() && isAllSelected()"
-                      [indeterminate]="selection().hasValue() && !isAllSelected()">
+        <mat-checkbox
+          (change)="$event ? toggleAllRows() : null"
+          [checked]="selection().hasValue() && isAllSelected()"
+          [indeterminate]="selection().hasValue() && !isAllSelected()"
+        >
         </mat-checkbox>
       </th>
       <td mat-cell *matCellDef="let row">
-        <mat-checkbox (click)="$event.stopPropagation()"
-                      (change)="$event ? selection().toggle(row) : null"
-                      [checked]="selection().isSelected(row)">
+        <mat-checkbox
+          (click)="$event.stopPropagation()"
+          (change)="$event ? selection().toggle(row) : null"
+          [checked]="selection().isSelected(row)"
+        >
         </mat-checkbox>
       </td>
     </ng-container>
 
     @for (col of dataColumns; track col) {
       <ng-container [matColumnDef]="col">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ labels[col] }}</th>
+        <th
+          mat-header-cell
+          *matHeaderCellDef
+          mat-sort-header
+          [disabled]="unsortableColumns.includes(col)"
+        >
+          {{ labels[col] }}
+        </th>
         <td mat-cell *matCellDef="let a">{{ a[col] }}</td>
       </ng-container>
     }
 
     <tr mat-header-row *matHeaderRowDef="columns()"></tr>
-    <tr mat-row *matRowDef="let a; columns: columns()"
-        class="address-row"
-        [class.selected]="a.id === store.selectedId()"
-        (click)="store.select(a.id)"></tr>
+    <tr
+      mat-row
+      *matRowDef="let a; columns: columns()"
+      class="address-row"
+      [class.selected]="a.id === store.selectedId()"
+      (click)="store.select(a.id)"
+    ></tr>
 
     <tr class="mat-mdc-row" *matNoDataRow>
       <td class="mat-mdc-cell px-4" [attr.colspan]="columns().length">
         @if (store.addresses.isLoading()) {
-          <app-skeleton/>
+          <app-skeleton />
         } @else if (store.addresses.error()) {
           <p class="py-4">Addresses could not be loaded.</p>
         } @else {
@@ -92,7 +117,8 @@
 
 <mat-paginator
   [length]="store.total()"
-  [pageIndex]="store.page().index"
-  [pageSize]="store.page().size"
+  [pageIndex]="store.pageIndex()"
+  [pageSize]="store.pageSize()"
   [pageSizeOptions]="[10, 25, 50]"
-  (page)="store.page.set({ index: $event.pageIndex, size: $event.pageSize })"/>
+  (page)="store.pageIndex.set($event.pageIndex); store.pageSize.set($event.pageSize)"
+/>
