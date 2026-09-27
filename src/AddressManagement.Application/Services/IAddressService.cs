@@ -1,5 +1,4 @@
 using AddressManagement.Application.Dtos;
-using AddressManagement.Domain;
 
 namespace AddressManagement.Application.Services;
 
