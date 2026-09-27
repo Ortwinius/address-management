@@ -29,8 +29,7 @@ import { FormField } from '@angular/forms/signals'
 
 const AllColumns: AddressField[] = ['street', 'zipCode', 'location', 'country', 'recipient']
 const CompactColumns: AddressField[] = ['street', 'location', 'country']
-// No country sort in the API.
-const UnsortableColumns: AddressField[] = ['country']
+const UnsortableColumns: AddressField[] = [] // could be added later
 
 @Component({
   imports: [
