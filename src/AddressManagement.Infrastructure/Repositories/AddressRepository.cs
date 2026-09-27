@@ -10,34 +10,18 @@ namespace AddressManagement.Infrastructure.Repositories;
 
 public class AddressRepository(AddressDbContext dbContext) : IAddressRepository
 {
-    private const int SmallResult = 10_000;
-
     public async Task<PagedResult<AddressListDto>> GetAll(AddressQueryDto queryDto, CancellationToken ct)
     {
-        var addresses = dbContext.Addresses.AsNoTracking().FilterStreet(queryDto);
-
-        // Location ids instead of a join: Postgres misestimated the join and scanned millions of addresses.
-        if (!string.IsNullOrWhiteSpace(queryDto.Location) || queryDto.Countries?.Length > 0)
-        {
-            var locationIds = await dbContext.Locations.Filter(queryDto).Select(l => l.Id).ToListAsync(ct);
-            addresses = addresses.Where(a => locationIds.Contains(a.LocationId));
-        }
+        var addresses = dbContext.Addresses.AsNoTracking().Filter(queryDto);
 
         // Counting millions of rows is expensive, so stop at MaxResults (+1 tells whether there are more).
         var counted = await addresses.Take(AddressQueryDto.MaxResults + 1).CountAsync(ct);
-
-        // Few matches: sort only their ids, otherwise Postgres walks the whole sort index to find them.
-        if (counted <= SmallResult)
-        {
-            var ids = await addresses.Select(a => a.Id).ToListAsync(ct);
-            addresses = dbContext.Addresses.AsNoTracking().Where(a => ids.Contains(a.Id));
-        }
 
         var items = await addresses.Sort(queryDto)
             .Skip((queryDto.Page - 1) * queryDto.PageSize)
             .Take(queryDto.PageSize)
             .Select(AddressMapper.ToListItem)
-            .ToListAsync(ct);
+            .ToArrayAsync(ct);
 
         return new PagedResult<AddressListDto>(
             Items: items,
@@ -46,7 +30,7 @@ public class AddressRepository(AddressDbContext dbContext) : IAddressRepository
             Page: queryDto.Page,
             PageSize: queryDto.PageSize);
     }
-    
+
     // Equality on Street uses the (Street, Id) index, so this stays fast on millions of rows.
     public Task<bool> Exists(AddressCreateDto dto, int? excludeId, CancellationToken ct) =>
         dbContext.Addresses.AnyAsync(a =>

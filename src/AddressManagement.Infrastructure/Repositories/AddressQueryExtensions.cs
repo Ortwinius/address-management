@@ -9,41 +9,25 @@ namespace AddressManagement.Infrastructure.Repositories;
 
 internal static class AddressQueryExtensions
 {
-    private const string LikeEscape = @"\";
-
-    public static IQueryable<Address> FilterStreet(this IQueryable<Address> addresses, AddressQueryDto query)
+    public static IQueryable<Address> Filter(this IQueryable<Address> addresses, AddressQueryDto query)
     {
         if (!string.IsNullOrWhiteSpace(query.Street))
         {
-            var pattern = ContainsPattern(query.Street);
-            addresses = addresses.Where(a => EF.Functions.ILike(a.Street, pattern, LikeEscape));
+            addresses = addresses.Where(a => EF.Functions.ILike(a.Street, $"%{query.Street}%"));
         }
 
-        return addresses;
-    }
-
-    public static IQueryable<Location> Filter(this IQueryable<Location> locations, AddressQueryDto query)
-    {
         if (!string.IsNullOrWhiteSpace(query.Location))
         {
-            var pattern = ContainsPattern(query.Location);
-            locations = locations.Where(l => EF.Functions.ILike(l.Name, pattern, LikeEscape));
+            addresses = addresses.Where(a => EF.Functions.ILike(a.Location.Name, $"%{query.Location}%"));
         }
 
         if (query.Countries?.Length > 0)
         {
-            locations = locations.Where(l => query.Countries.Contains(l.Country.Name));
+            addresses = addresses.Where(a => query.Countries.Contains(a.Location.Country.Name));
         }
 
-        return locations;
+        return addresses;
     }
-
-    // Escapes "%" and "_", so they are searched literally instead of acting as LIKE wildcards.
-    private static string ContainsPattern(string term) =>
-        "%" + term.Trim()
-            .Replace(LikeEscape, LikeEscape + LikeEscape)
-            .Replace("%", LikeEscape + "%")
-            .Replace("_", LikeEscape + "_") + "%";
 
     public static IQueryable<Address> Sort(this IQueryable<Address> addresses, AddressQueryDto query)
     {

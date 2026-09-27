@@ -46,4 +46,4 @@ public sealed record AddressQueryDto(
     public const int MinStreetSearchLength = 3; // the trigram index on Street needs 3 characters
 }
 
-public sealed record PagedResult<T>(List<T> Items, int Total, bool TotalCapped, int Page, int PageSize);
+public sealed record PagedResult<T>(IEnumerable<T> Items, int Total, bool TotalCapped, int Page, int PageSize);

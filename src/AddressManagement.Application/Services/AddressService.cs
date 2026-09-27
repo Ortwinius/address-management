@@ -20,7 +20,7 @@ public class AddressService(
     {
         var result = await addressRepository.GetAll(queryDto, ct);
 
-        logger.LogInformation("Loaded {Count} of {Total} addresses", result.Items.Count, result.Total);
+        logger.LogInformation("Loaded {Count} of {Total} addresses", result.Items.Count(), result.Total);
         return result;
     }
 
