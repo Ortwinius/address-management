@@ -15,7 +15,6 @@ public class AddressQueryDtoValidator : AbstractValidator<AddressQueryDto>
             .WithMessage($"Only the first {AddressQueryDto.MaxResults} results can be paged. Narrow the filter instead.");
         RuleFor(x => x.Countries!.Length).LessThan(300).When(x => x.Countries is not null);
 
-        // Shorter search terms can't use the street index and would scan all addresses.
         RuleFor(x => x.Street)
             .MaximumLength(FieldLimits.Text)
             .Must(street => street!.Trim().Length >= AddressQueryDto.MinStreetSearchLength)

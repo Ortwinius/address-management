@@ -9,7 +9,7 @@ import { AddressCreate, AddressFilter } from './addresses.models'
 export type PanelMode = 'closed' | 'view' | 'edit' | 'new'
 
 const DebounceTimeInMs = 300
-// The street search needs 3 characters to use its index (the API rejects shorter terms).
+// Shorter street terms are rejected by the API (trigram index).
 const MinStreetSearchLength = 3
 
 @Injectable()

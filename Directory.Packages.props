@@ -24,8 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Not referenced directly: pins the EF Core that Npgsql brings in transitively to the version of
-         EF Core Design, so every project builds and runs against the same EF Core. -->
+    <!-- Pins the EF Core that Npgsql pulls in to the EF Core Design version. -->
     <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="10.0.12" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.12" />
   </ItemGroup>

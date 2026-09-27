@@ -30,7 +30,7 @@ builder.Services.ConfigureHttpJsonOptions(o =>
 var connString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<AddressDbContext>(options =>
     options.UseNpgsql(connString)
-        // AddressRepository counts with Take() but without OrderBy on purpose: the order doesn't change a count.
+        // The capped count in AddressRepository has no OrderBy on purpose.
         .ConfigureWarnings(w => w.Ignore(CoreEventId.RowLimitingOperationWithoutOrderByWarning)));
 
 builder.Services.AddScoped<IAddressRepository, AddressRepository>();
@@ -54,7 +54,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddAuthorizationBuilder()
     .SetFallbackPolicy(new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build()); // every endpoint
 
-// A conflict (e.g. a duplicate address) is expected: 409 with its message. Other exceptions stay a generic 500.
+// Duplicate address (ConflictException) -> 409 with its message, anything else stays a generic 500.
 builder.Services.AddProblemDetails(o => o.CustomizeProblemDetails = ctx =>
 {
     if (ctx.HttpContext.Features.Get<IExceptionHandlerFeature>()?.Error is ConflictException conflict)
@@ -87,7 +87,7 @@ if (app.Environment.IsDevelopment())
 app.UseExceptionHandler(new ExceptionHandlerOptions
 {
     StatusCodeSelector = ex => ex is ConflictException ? StatusCodes.Status409Conflict : StatusCodes.Status500InternalServerError,
-    SuppressDiagnosticsCallback = ctx => ctx.Exception is ConflictException // expected, so not logged as an error
+    SuppressDiagnosticsCallback = ctx => ctx.Exception is ConflictException // no error log for duplicates
 });
 app.UseAuthentication();
 app.UseAuthorization();

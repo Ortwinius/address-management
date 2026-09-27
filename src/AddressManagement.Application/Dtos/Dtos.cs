@@ -29,7 +29,7 @@ public sealed record AddressCreateDto(
 
 public sealed record CountryDto(string Name);
 
-// No Country: with only a few countries, sorting by it can't use an index and sorts millions of rows.
+// No Country: sorting by it can't use an index.
 public enum AddressSortColumn{Street,ZipCode,Location,Recipient}
 
 public sealed record AddressQueryDto(

@@ -38,7 +38,7 @@ internal static class AddressQueryExtensions
         return locations;
     }
 
-    // "%" and "_" are LIKE wildcards. Escaped, they are searched for literally and can't bypass the trigram index.
+    // Escapes "%" and "_", so they are searched literally instead of acting as LIKE wildcards.
     private static string ContainsPattern(string term) =>
         "%" + term.Trim()
             .Replace(LikeEscape, LikeEscape + LikeEscape)

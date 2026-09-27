@@ -10,15 +10,13 @@ namespace AddressManagement.Infrastructure.Repositories;
 
 public class AddressRepository(AddressDbContext dbContext) : IAddressRepository
 {
-    // Up to this many matches, loading and sorting just their ids takes milliseconds.
     private const int SmallResult = 10_000;
 
     public async Task<PagedResult<AddressListDto>> GetAll(AddressQueryDto queryDto, CancellationToken ct)
     {
         var addresses = dbContext.Addresses.AsNoTracking().FilterStreet(queryDto);
 
-        // Location and country filters only need the small Locations table. Resolving them to ids first gives
-        // Postgres exact values to plan with, instead of a join estimate that was off by orders of magnitude.
+        // Location ids instead of a join: Postgres misestimated the join and scanned millions of addresses.
         if (!string.IsNullOrWhiteSpace(queryDto.Location) || queryDto.Countries?.Length > 0)
         {
             var locationIds = await dbContext.Locations.Filter(queryDto).Select(l => l.Id).ToListAsync(ct);
@@ -28,8 +26,7 @@ public class AddressRepository(AddressDbContext dbContext) : IAddressRepository
         // Counting millions of rows is expensive, so stop at MaxResults (+1 tells whether there are more).
         var counted = await addresses.Take(AddressQueryDto.MaxResults + 1).CountAsync(ct);
 
-        // For ORDER BY + LIMIT, Postgres may walk a sort index until enough rows match. With only a few matches
-        // among millions of rows that walk takes seconds, so small results load their ids and sort only those.
+        // Few matches: sort only their ids, otherwise Postgres walks the whole sort index to find them.
         if (counted <= SmallResult)
         {
             var ids = await addresses.Select(a => a.Id).ToListAsync(ct);
