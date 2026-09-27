@@ -3,13 +3,10 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
+    "start": "ng serve --proxy-config proxy.conf.json",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test",
-    "format": "prettier --write src",
-    "format:check": "prettier --check src",
-    "api:types": "openapi-typescript http://localhost:5100/openapi/v1.json -o src/app/api/api-types.ts"
+    "test": "ng test"
   },
   "private": true,
   "packageManager": "npm@12.0.2",
@@ -32,10 +29,8 @@
     "@angular/build": "^22.1.8",
     "@angular/cli": "^22.1.8",
     "@angular/compiler-cli": "^22.1.0",
-    "@types/google.accounts": "^0.0.18",
     "jsdom": "^28.0.0",
-    "openapi-typescript": "^7.13.0",
-    "prettier": "^3.9.9",
+    "prettier": "^3.8.1",
     "typescript": "~6.0.2",
     "vitest": "^4.0.8"
   }

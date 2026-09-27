@@ -3,7 +3,7 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "types": ["google.accounts"]
+    "types": []
   },
   "include": [
     "src/**/*.ts"
