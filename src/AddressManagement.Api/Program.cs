@@ -7,12 +7,15 @@ using AddressManagement.Application.Services;
 using AddressManagement.Application.Validators;
 using AddressManagement.Infrastructure.Persistence;
 using AddressManagement.Infrastructure.Repositories;
+
 using FluentValidation;
+
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);

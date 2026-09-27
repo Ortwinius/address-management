@@ -1,28 +1,28 @@
 namespace AddressManagement.Application.Dtos;
 
 public sealed record AddressListDto(
-    int Id, 
-    string Street, 
-    string ZipCode, 
-    string Location, 
+    int Id,
+    string Street,
+    string ZipCode,
+    string Location,
     string Country,
     string Recipient);
 
 public sealed record AddressDetailDto(
-    int Id, 
-    string Street, 
-    string ZipCode, 
-    string Location, 
+    int Id,
+    string Street,
+    string ZipCode,
+    string Location,
     string Country,
     string Recipient,
     string? AddressAffix
 );
 
 public sealed record AddressCreateDto(
-    string Street, 
-    string ZipCode, 
-    string Location, 
-    string Country, 
+    string Street,
+    string ZipCode,
+    string Location,
+    string Country,
     string Recipient,
     string? AddressAffix
 );
@@ -30,7 +30,7 @@ public sealed record AddressCreateDto(
 public sealed record CountryDto(string Name);
 
 // No Country: sorting by it can't use an index.
-public enum AddressSortColumn{Street,ZipCode,Location,Recipient}
+public enum AddressSortColumn { Street, ZipCode, Location, Recipient }
 
 public sealed record AddressQueryDto(
     string? Street,

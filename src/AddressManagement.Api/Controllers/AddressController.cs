@@ -2,6 +2,7 @@ using AddressManagement.Application.Dtos;
 using AddressManagement.Application.Services;
 
 using FluentValidation;
+
 using Microsoft.AspNetCore.Mvc;
 
 namespace AddressManagement.Api.Controllers;
@@ -68,7 +69,7 @@ public class AddressController(
         var deleted = await addressService.Delete(id, ct);
         return deleted ? NoContent() : NotFound();
     }
-    
+
     [HttpDelete]
     public async Task<ActionResult> DeleteMany([FromQuery] int[] ids, CancellationToken ct = default)
     {

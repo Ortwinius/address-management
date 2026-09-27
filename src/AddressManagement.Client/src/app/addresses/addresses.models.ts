@@ -10,9 +10,9 @@ export type AddressPage = Schemas['PagedResultOfAddressListDto']
 export type Country = Schemas['CountryDto']
 
 export type AddressFilter = {
-  street: string;
-  location: string;
-  countries: string[];
+  street: string
+  location: string
+  countries: string[]
 }
 
 // Note: could be auto generated too, but its hidden in openapi in the query params bc openApi flattened the [FromQuery] params

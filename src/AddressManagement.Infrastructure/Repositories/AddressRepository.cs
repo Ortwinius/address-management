@@ -21,7 +21,7 @@ public class AddressRepository(AddressDbContext dbContext) : IAddressRepository
             .Skip((queryDto.Page - 1) * queryDto.PageSize)
             .Take(queryDto.PageSize)
             .Select(AddressMapper.ToListItem)
-            .ToArrayAsync(ct);
+            .ToListAsync(ct); // a bit more performant than ToArrayAsync according to https://steven-giesel.com/blogPost/4ec751cd-d773-44c2-996e-cc4ae9ae966c/toarrayasync-vs-tolistasync-in-entity-framework-8
 
         return new PagedResult<AddressListDto>(
             Items: items,
@@ -48,19 +48,19 @@ public class AddressRepository(AddressDbContext dbContext) : IAddressRepository
             .ThenInclude(l => l.Country)
             .FirstOrDefaultAsync(a => a.Id == id, ct);
 
-    
+
     public async Task Add(Address address, CancellationToken ct)
     {
         dbContext.Addresses.Add(address);
         await dbContext.SaveChangesAsync(ct);
     }
-    
+
     public async Task Update(Address address, CancellationToken ct)
     {
         dbContext.Addresses.Update(address);
         await dbContext.SaveChangesAsync(ct);
     }
-    
+
     public async Task<bool> Delete(int id, CancellationToken ct)
     {
         var deletedCount = await dbContext.Addresses

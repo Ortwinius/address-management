@@ -1,6 +1,12 @@
 import { HttpClient, httpResource } from '@angular/common/http'
 import { inject, Injectable } from '@angular/core'
-import { AddressCreate, AddressDetail, AddressPage, AddressQuery, Country } from './addresses.models'
+import {
+  AddressCreate,
+  AddressDetail,
+  AddressPage,
+  AddressQuery,
+  Country,
+} from './addresses.models'
 
 const Url = '/api/addresses'
 

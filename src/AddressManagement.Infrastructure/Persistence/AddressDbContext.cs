@@ -12,7 +12,7 @@ public class AddressDbContext(DbContextOptions<AddressDbContext> options) : DbCo
     public DbSet<Location> Locations => Set<Location>();
     public DbSet<Country> Countries => Set<Country>();
     public DbSet<Recipient> Recipients => Set<Recipient>();
-    
+
     protected override void OnModelCreating(ModelBuilder b)
     {
         b.HasDefaultSchema("addresses");
