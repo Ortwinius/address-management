@@ -482,5 +482,3 @@ $RECYCLE.BIN/
 *.swp
 
 .aiassistant/
-.claude/
-.angular/cache
