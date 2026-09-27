@@ -29,8 +29,14 @@ public sealed record AddressCreateDto(
 
 public sealed record CountryDto(string Name);
 
-// No Country: sorting by it can't use an index.
-public enum AddressSortColumn { Street, ZipCode, Location, Recipient }
+public enum AddressSortColumn
+{
+    Street, 
+    ZipCode, 
+    Location, 
+    Recipient, 
+    Country
+}
 
 public sealed record AddressQueryDto(
     string? Street,
@@ -43,7 +49,6 @@ public sealed record AddressQueryDto(
 )
 {
     public const int MaxResults = 100_000;
-    public const int MinStreetSearchLength = 3; // the trigram index on Street needs 3 characters
 }
 
 public sealed record PagedResult<T>(IEnumerable<T> Items, int Total, bool TotalCapped, int Page, int PageSize);

@@ -17,8 +17,6 @@ public class AddressQueryDtoValidator : AbstractValidator<AddressQueryDto>
 
         RuleFor(x => x.Street)
             .MaximumLength(FieldLimits.Text)
-            .Must(street => street!.Trim().Length >= AddressQueryDto.MinStreetSearchLength)
-            .WithMessage($"'{{PropertyName}}' needs at least {AddressQueryDto.MinStreetSearchLength} characters.")
             .When(x => !string.IsNullOrWhiteSpace(x.Street));
         RuleFor(x => x.Location).MaximumLength(FieldLimits.Text);
     }

@@ -5,7 +5,7 @@ This is an address management platform with an ASP.NET Core Web API (.NET 10, Po
 Addresses can be created, edited, deleted and searched by street, location and country, also on millions of rows.
 
 ## ! Installation Instructions ! 
-Requirements: .NET 10 SDK (dotnet), Node.js (npm) and Docker.
+Requirements: .NET 10 SDK (dotnet), Node.js (npm, current LTS) and Docker.
 
 Run each command from the repository root in its own terminal:
 ```
@@ -83,3 +83,7 @@ When updating the models, run the script `npm run api:types` to apply the change
 - A select option for rows was added which was technically not a listed could-have, but the <mat-table> Materials template
 made it relatively easy to integrate so I couldn't resist it.
 - In dev mode, SQL requests which take long are logged so that you can debug them. 
+- An individual controller for Countries was created since the resource `countries` is directly accessed in the frontend
+for the multi-select. Technically, an own controller for locations could be added as well (especially considering
+that a multiselect for locations might make more sense). You could argue that only one controller would have been
+sufficient for this MVP.
