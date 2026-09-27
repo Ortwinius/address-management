@@ -36,6 +36,7 @@ internal static class AddressQueryExtensions
             AddressSortColumn.ZipCode => a => a.Location.ZipCode,
             AddressSortColumn.Location => a => a.Location.Name,
             AddressSortColumn.Recipient => a => a.Recipient.Name,
+            AddressSortColumn.Country => a => a.Location.Country.Name,
             _ => a => a.Street
         };
 

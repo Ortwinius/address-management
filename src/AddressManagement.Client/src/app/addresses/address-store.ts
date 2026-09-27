@@ -9,8 +9,6 @@ import { AddressCreate, AddressFilter } from './addresses.models'
 export type PanelMode = 'closed' | 'view' | 'edit' | 'new'
 
 const DebounceTimeInMs = 300
-// Shorter street terms are rejected by the API (trigram index).
-const MinStreetSearchLength = 3
 
 @Injectable()
 export class AddressStore {
@@ -36,7 +34,6 @@ export class AddressStore {
     const filter = this.filter()
     return {
       ...filter,
-      street: filter.street.trim().length >= MinStreetSearchLength ? filter.street : '',
       sortCol: this.sort().active,
       desc: this.sort().direction === 'desc',
       page: this.pageIndex() + 1,
