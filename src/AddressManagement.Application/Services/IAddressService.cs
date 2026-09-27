@@ -4,7 +4,15 @@ namespace AddressManagement.Application.Services;
 
 public interface IAddressService
 {
-    Task<IEnumerable<AddressListDto>> GetAll(CancellationToken ct);
-   
-    Task<AddressDetailDto> Add(AddressUpsertDto addressDto, CancellationToken ct);
+    Task<PagedResult<AddressListDto>> GetAll(AddressQueryDto queryDto, CancellationToken ct);
+
+    Task<AddressDetailDto?> GetById(int id, CancellationToken ct);
+
+    Task<AddressDetailDto> Add(AddressCreateDto addressDto, CancellationToken ct);
+
+    Task<AddressDetailDto?> Update(int id, AddressCreateDto addressDto, CancellationToken ct);
+
+    Task<bool> Delete(int id, CancellationToken ct);
+
+    Task<int> DeleteMany(int[] ids, CancellationToken ct);
 }
