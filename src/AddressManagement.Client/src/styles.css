@@ -1,2 +1,7 @@
 /* You can add global styles to this file, and also import other style files */
-@import "tailwindcss";
+@import 'tailwindcss';
+
+/* Text buttons for destructive actions. */
+.danger {
+  --mat-button-text-label-text-color: var(--mat-sys-error);
+}

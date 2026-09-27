@@ -1,0 +1,3 @@
+src/app/api/api-types.ts
+dist
+node_modules
