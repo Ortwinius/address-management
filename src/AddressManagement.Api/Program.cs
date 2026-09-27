@@ -1,7 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-using AddressManagement.Application;
+using AddressManagement.Application.Exceptions;
 using AddressManagement.Application.Repositories;
 using AddressManagement.Application.Services;
 using AddressManagement.Application.Validators;
@@ -10,7 +10,9 @@ using AddressManagement.Infrastructure.Repositories;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -27,7 +29,9 @@ builder.Services.ConfigureHttpJsonOptions(o =>
 
 var connString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<AddressDbContext>(options =>
-    options.UseNpgsql(connString));
+    options.UseNpgsql(connString)
+        // AddressRepository counts with Take() but without OrderBy on purpose: the order doesn't change a count.
+        .ConfigureWarnings(w => w.Ignore(CoreEventId.RowLimitingOperationWithoutOrderByWarning)));
 
 builder.Services.AddScoped<IAddressRepository, AddressRepository>();
 builder.Services.AddScoped<ICountryRepository, CountryRepository>();
@@ -50,7 +54,14 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddAuthorizationBuilder()
     .SetFallbackPolicy(new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build()); // every endpoint
 
-builder.Services.AddProblemDetails();
+// A conflict (e.g. a duplicate address) is expected: 409 with its message. Other exceptions stay a generic 500.
+builder.Services.AddProblemDetails(o => o.CustomizeProblemDetails = ctx =>
+{
+    if (ctx.HttpContext.Features.Get<IExceptionHandlerFeature>()?.Error is ConflictException conflict)
+    {
+        ctx.ProblemDetails.Detail = conflict.Message;
+    }
+});
 
 builder.Services.AddOpenApi();
 
@@ -73,7 +84,11 @@ if (app.Environment.IsDevelopment())
     }
 }
 
-app.UseExceptionHandler();
+app.UseExceptionHandler(new ExceptionHandlerOptions
+{
+    StatusCodeSelector = ex => ex is ConflictException ? StatusCodes.Status409Conflict : StatusCodes.Status500InternalServerError,
+    SuppressDiagnosticsCallback = ctx => ctx.Exception is ConflictException // expected, so not logged as an error
+});
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

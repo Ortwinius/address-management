@@ -1,7 +1,7 @@
 <div class="flex flex-wrap items-center gap-2 p-4">
   <mat-form-field class="grow basis-48" subscriptSizing="dynamic">
     <mat-label>Street</mat-label>
-    <input matInput [formField]="store.filterForm.street" />
+    <input matInput [formField]="store.filterForm.street" placeholder="Min. 3 characters" />
   </mat-form-field>
 
   <mat-form-field class="grow basis-48" subscriptSizing="dynamic">
@@ -37,7 +37,8 @@
     </button>
   } @else {
     <span class="text-(--mat-sys-on-surface-variant)"
-      >{{ store.total() | number }}{{ store.totalCapped() ? '+' : '' }} {{store.total() === 1 ? 'address' : 'addresses'}}</span
+      >{{ store.total() | number }}{{ store.totalCapped() ? '+' : '' }}
+      {{ store.total() === 1 ? 'address' : 'addresses' }}</span
     >
   }
 </div>
@@ -79,7 +80,14 @@
 
     @for (col of dataColumns; track col) {
       <ng-container [matColumnDef]="col">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ labels[col] }}</th>
+        <th
+          mat-header-cell
+          *matHeaderCellDef
+          mat-sort-header
+          [disabled]="unsortableColumns.includes(col)"
+        >
+          {{ labels[col] }}
+        </th>
         <td mat-cell *matCellDef="let a">{{ a[col] }}</td>
       </ng-container>
     }

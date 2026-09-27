@@ -4,11 +4,13 @@ import { Sort } from '@angular/material/sort'
 import { finalize, Observable } from 'rxjs'
 import { Toaster } from '../shared/toaster'
 import { AddressApi } from './address-api'
-import {AddressCreate, AddressFilter} from './addresses.models'
+import { AddressCreate, AddressFilter } from './addresses.models'
 
 export type PanelMode = 'closed' | 'view' | 'edit' | 'new'
 
 const DebounceTimeInMs = 300
+// The street search needs 3 characters to use its index (the API rejects shorter terms).
+const MinStreetSearchLength = 3
 
 @Injectable()
 export class AddressStore {
@@ -30,13 +32,17 @@ export class AddressStore {
     computation: () => 0,
   })
 
-  readonly addresses = this.api.list(() => ({
-    ...this.filter(),
-    sortCol: this.sort().active,
-    desc: this.sort().direction === 'desc',
-    page: this.pageIndex() + 1,
-    pageSize: this.pageSize(),
-  }))
+  readonly addresses = this.api.list(() => {
+    const filter = this.filter()
+    return {
+      ...filter,
+      street: filter.street.trim().length >= MinStreetSearchLength ? filter.street : '',
+      sortCol: this.sort().active,
+      desc: this.sort().direction === 'desc',
+      page: this.pageIndex() + 1,
+      pageSize: this.pageSize(),
+    }
+  })
 
   readonly items = computed(() => (this.addresses.hasValue() ? this.addresses.value().items : []))
   readonly total = computed(() => (this.addresses.hasValue() ? this.addresses.value().total : 0))

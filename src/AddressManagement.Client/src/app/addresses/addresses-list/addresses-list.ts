@@ -25,10 +25,12 @@ import {
 } from '@angular/material/table'
 import { SelectionModel } from '@angular/cdk/collections'
 import { MatCheckbox } from '@angular/material/checkbox'
-import {FormField} from '@angular/forms/signals';
+import { FormField } from '@angular/forms/signals'
 
 const AllColumns: AddressField[] = ['street', 'zipCode', 'location', 'country', 'recipient']
 const CompactColumns: AddressField[] = ['street', 'location', 'country']
+// The API can't sort by country: too few distinct values to use an index on millions of rows.
+const UnsortableColumns: AddressField[] = ['country']
 
 @Component({
   imports: [
@@ -71,6 +73,7 @@ export class AddressesList {
 
   protected readonly labels = AddressLabels
   protected readonly dataColumns = AllColumns
+  protected readonly unsortableColumns = UnsortableColumns
   protected readonly columns = computed(() => [
     'select',
     ...(this.compact() ? CompactColumns : AllColumns),

@@ -9,25 +9,41 @@ namespace AddressManagement.Infrastructure.Repositories;
 
 internal static class AddressQueryExtensions
 {
-    public static IQueryable<Address> Filter(this IQueryable<Address> addresses, AddressQueryDto query)
+    private const string LikeEscape = @"\";
+
+    public static IQueryable<Address> FilterStreet(this IQueryable<Address> addresses, AddressQueryDto query)
     {
         if (!string.IsNullOrWhiteSpace(query.Street))
         {
-            addresses = addresses.Where(a => EF.Functions.ILike(a.Street, $"%{query.Street}%"));
-        }
-
-        if (!string.IsNullOrWhiteSpace(query.Location))
-        {
-            addresses = addresses.Where(a => EF.Functions.ILike(a.Location.Name, $"%{query.Location}%"));
-        }
-
-        if (query.Countries?.Length > 0)
-        {
-            addresses = addresses.Where(a => query.Countries.Contains(a.Location.Country.Name));
+            var pattern = ContainsPattern(query.Street);
+            addresses = addresses.Where(a => EF.Functions.ILike(a.Street, pattern, LikeEscape));
         }
 
         return addresses;
     }
+
+    public static IQueryable<Location> Filter(this IQueryable<Location> locations, AddressQueryDto query)
+    {
+        if (!string.IsNullOrWhiteSpace(query.Location))
+        {
+            var pattern = ContainsPattern(query.Location);
+            locations = locations.Where(l => EF.Functions.ILike(l.Name, pattern, LikeEscape));
+        }
+
+        if (query.Countries?.Length > 0)
+        {
+            locations = locations.Where(l => query.Countries.Contains(l.Country.Name));
+        }
+
+        return locations;
+    }
+
+    // "%" and "_" are LIKE wildcards. Escaped, they are searched for literally and can't bypass the trigram index.
+    private static string ContainsPattern(string term) =>
+        "%" + term.Trim()
+            .Replace(LikeEscape, LikeEscape + LikeEscape)
+            .Replace("%", LikeEscape + "%")
+            .Replace("_", LikeEscape + "_") + "%";
 
     public static IQueryable<Address> Sort(this IQueryable<Address> addresses, AddressQueryDto query)
     {
@@ -35,7 +51,6 @@ internal static class AddressQueryExtensions
         {
             AddressSortColumn.ZipCode => a => a.Location.ZipCode,
             AddressSortColumn.Location => a => a.Location.Name,
-            AddressSortColumn.Country => a => a.Location.Country.Name,
             AddressSortColumn.Recipient => a => a.Recipient.Name,
             _ => a => a.Street
         };

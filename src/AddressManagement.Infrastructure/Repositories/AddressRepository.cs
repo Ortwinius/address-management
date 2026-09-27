@@ -1,4 +1,3 @@
-using AddressManagement.Application;
 using AddressManagement.Application.Dtos;
 using AddressManagement.Application.Mappers;
 using AddressManagement.Application.Repositories;
@@ -11,12 +10,31 @@ namespace AddressManagement.Infrastructure.Repositories;
 
 public class AddressRepository(AddressDbContext dbContext) : IAddressRepository
 {
+    // Up to this many matches, loading and sorting just their ids takes milliseconds.
+    private const int SmallResult = 10_000;
+
     public async Task<PagedResult<AddressListDto>> GetAll(AddressQueryDto queryDto, CancellationToken ct)
     {
-        var addresses = dbContext.Addresses.AsNoTracking().Filter(queryDto);
+        var addresses = dbContext.Addresses.AsNoTracking().FilterStreet(queryDto);
+
+        // Location and country filters only need the small Locations table. Resolving them to ids first gives
+        // Postgres exact values to plan with, instead of a join estimate that was off by orders of magnitude.
+        if (!string.IsNullOrWhiteSpace(queryDto.Location) || queryDto.Countries?.Length > 0)
+        {
+            var locationIds = await dbContext.Locations.Filter(queryDto).Select(l => l.Id).ToListAsync(ct);
+            addresses = addresses.Where(a => locationIds.Contains(a.LocationId));
+        }
 
         // Counting millions of rows is expensive, so stop at MaxResults (+1 tells whether there are more).
         var counted = await addresses.Take(AddressQueryDto.MaxResults + 1).CountAsync(ct);
+
+        // For ORDER BY + LIMIT, Postgres may walk a sort index until enough rows match. With only a few matches
+        // among millions of rows that walk takes seconds, so small results load their ids and sort only those.
+        if (counted <= SmallResult)
+        {
+            var ids = await addresses.Select(a => a.Id).ToListAsync(ct);
+            addresses = dbContext.Addresses.AsNoTracking().Where(a => ids.Contains(a.Id));
+        }
 
         var items = await addresses.Sort(queryDto)
             .Skip((queryDto.Page - 1) * queryDto.PageSize)
@@ -73,24 +91,4 @@ public class AddressRepository(AddressDbContext dbContext) : IAddressRepository
 
     public Task<int> DeleteMany(int[] ids, CancellationToken ct) =>
         dbContext.Addresses.Where(a => ids.Contains(a.Id)).ExecuteDeleteAsync(ct);
-
-    public async Task<IEnumerable<CountryDto>> GetCountries(CancellationToken ct)
-    {
-        var countries = await dbContext.Countries
-            .AsNoTracking()
-            .OrderBy(c => c.Name)
-            .Select(CountryMapper.ToDto)
-            .ToListAsync(ct);
-        return countries;
-    }
-    
-    public Task<Recipient?> FindRecipient(string name, CancellationToken ct) =>
-        dbContext.Recipients.FirstOrDefaultAsync(r => r.Name == name, ct);
-
-    public Task<Country?> FindCountry(string name, CancellationToken ct) =>
-        dbContext.Countries.FirstOrDefaultAsync(c => c.Name == name, ct);
-
-    public Task<Location?> FindLocation(int countryId, string zipCode, string name, CancellationToken ct) =>
-        dbContext.Locations.FirstOrDefaultAsync(
-            l => l.CountryId == countryId && l.ZipCode == zipCode && l.Name == name, ct);
 }

@@ -245,7 +245,7 @@ export interface components {
             recipient: string;
         };
         /** @enum {unknown} */
-        AddressSortColumn: "street" | "zipCode" | "location" | "country" | "recipient";
+        AddressSortColumn: "street" | "zipCode" | "location" | "recipient";
         CountryDto: {
             name: string;
         };
