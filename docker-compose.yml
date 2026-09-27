@@ -1,6 +1,8 @@
 services:
   db:
     image: postgres:17
+    # Dev: every statement slower than 100 ms is logged with its execution plan (docker compose logs -f db).
+    command: postgres -c shared_preload_libraries=auto_explain -c auto_explain.log_min_duration=100ms -c auto_explain.log_analyze=on -c auto_explain.log_timing=off
     environment:
       POSTGRES_USER: app
       POSTGRES_PASSWORD: app
