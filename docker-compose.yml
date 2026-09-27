@@ -11,5 +11,28 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: pg_isready -h localhost -U app -d addresses
+      interval: 2s
+      retries: 30
+  api:
+    build:
+      context: .
+      dockerfile: src/AddressManagement.Api/Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development # applies the migrations and enables Scalar
+      ConnectionStrings__DefaultConnection: Host=db;Database=addresses;Username=app;Password=app
+      SeedAddresses: 100000
+    ports:
+      - "5100:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+  client:
+    build: src/AddressManagement.Client
+    ports:
+      - "4200:80" # the Google login only accepts http://localhost:4200
+    depends_on:
+      - api
 volumes:
   pgdata:

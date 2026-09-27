@@ -5,39 +5,18 @@ This is an address management platform with an ASP.NET Core Web API (.NET 10, Po
 Addresses can be created, edited, deleted and searched by street, location and country, also on millions of rows.
 
 ## ! Installation Instructions ! 
-### Requirements
-Requirements: Docker Desktop, .NET 10 SDK and Node.js LTS (includes npm).
-If they are missing, install them and open a new terminal afterwards:
-```
-winget install Docker.DockerDesktop
-winget install Microsoft.DotNet.SDK.10
-winget install OpenJS.NodeJS.LTS
-```
-Start Docker Desktop once after installing it (it may ask for a restart).
+### Quick start with Docker (recommended)
+Requirement: Docker Desktop (Windows: `winget install Docker.DockerDesktop`, then start it once).
 
-### Setup Instructions - Windows
-Terminal 1, in the repository root:
+In the repository root:
 ```
-docker compose up -d
-dotnet run --project src/AddressManagement.Api -- SeedAddresses=100000
+docker compose up --build
 ```
-Wait for `Now listening on: http://localhost:5100`. The first start applies the migrations and creates 100,000 test addresses, later starts skip existing data.
-
-Terminal 2, in the repository root:
-```
-cd src/AddressManagement.Client
-npm install
-npm start
-```
-
-### Setup Instructions - Linux & MacOS / Git Bash 
-Run each command from the repository root in its own terminal:
-```
-docker compose up -d
-dotnet run --project src/AddressManagement.Api -- SeedAddresses=100000
-cd src/AddressManagement.Client && npm install && npm start
-```
-- ! Optional test data: `dotnet run --project src/AddressManagement.Api -- SeedAddresses=100000`
+The first build takes a few minutes. The first start applies the migrations and creates 100,000 test addresses, later starts skip existing data.
+- App: http://localhost:4200 (the Google login only works on this origin)
+- API documentation (Scalar): http://localhost:5100/scalar
+- Stop with `Ctrl+C`. `docker compose down -v` also deletes the data.
+- ! Optional test data: `dotnet run --project src/AddressManagement.Api -- SeedAddresses=100000` (or a different value)
 - Open the app at http://localhost:4200. The Google login only works on this origin.
 - Migrations are applied automatically when the API starts in Development.
 
